@@ -176,3 +176,5 @@ ENV/
 /site
 
 # End of https://www.gitignore.io/api/osx,pydev,python,pycharm
+
+private.sh
