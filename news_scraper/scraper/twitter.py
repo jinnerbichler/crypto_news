@@ -30,12 +30,14 @@ class Scraper:
 
         # search for tweets of users
         for user in self.users:
+            logger.debug('{} scraping {}'.format(self, user))
             cursor = tweepy.Cursor(self.api.user_timeline, id=user, count=50)
             for item in cursor.items(limit=50):
                 self._progress_item(item)
 
         # search for specific hashtags
         for hashtag in self.hashtags:
+            logger.debug('{} scraping {}'.format(self, hashtag))
             cursor = tweepy.Cursor(self.api.search, q=hashtag, count=50)
             for item in cursor.items(limit=50):
                 self._progress_item(item)
@@ -56,6 +58,8 @@ class Scraper:
                 notifier.notify(title='New tweet from {}'.format(item.author.screen_name),
                                 message=item.text,
                                 url=construct_twitter_link(item))
+
+            logger.info('Found new tweet {}'.format(tweet))
 
     def __str__(self):
         return "<TwitterScraper {}>".format(self.token_name)

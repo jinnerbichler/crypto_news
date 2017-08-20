@@ -1,3 +1,5 @@
+import threading
+from datetime import timedelta, datetime
 from logging import getLogger
 from django.core.management.base import BaseCommand
 from django.conf import settings
@@ -16,8 +18,9 @@ class Command(BaseCommand):
         # initialise scrapers
         scrapers = init_scrapers(notifiers=notifiers)
 
-        # test
-        scrapers[0].scrape()
+        # perform periodic scraping
+        perform_scraping(scrapers=scrapers)
+        schedule_scraping(scrapers=scrapers)
 
 
 def init_scrapers(notifiers):
@@ -50,3 +53,24 @@ def init_notifiers():
         notifiers[notifier_id] = notifier_module.Notifier(identifier=notifier_id,
                                                           config=notifier_config)
     return notifiers
+
+
+def schedule_scraping(scrapers):
+    ohlc_interval = 15  # in minutes
+    next_time = datetime.now() + timedelta(seconds=ohlc_interval * 60)
+
+    def update():
+        perform_scraping(scrapers=scrapers)
+        schedule_scraping(scrapers=scrapers)
+
+    threading.Timer((next_time - datetime.now()).total_seconds(), update).start()
+    logger.info('Scheduled next scraping at {} (UTC)'.format(next_time))
+
+
+# noinspection PyBroadException
+def perform_scraping(scrapers):
+    for scraper in scrapers:
+        try:
+            scraper.scrape()
+        except:
+            logger.exception('Error while scraping {}'.format(scraper))

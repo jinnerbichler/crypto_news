@@ -1,0 +1,29 @@
+version: '2'
+
+services:
+
+  db:
+    image: postgres:9.6.3
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=cryptomizrDB
+
+  scraper:
+    build: .
+    entrypoint: /bin/bash docker-entrypoint.sh run_scraper
+    ports:
+     - "80:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=cryptomizr.docker_settings
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - TWITTER_API_KEY=${TWITTER_API_KEY}
+      - TWITTER_API_SECRET=${TWITTER_API_SECRET}
+      - TWITTER_ACCESS_TOKEN=$TWITTER_ACCESS_TOKEN}
+      - TWITTER_ACCESS_TOKEN_SECRET=${TWITTER_ACCESS_TOKEN_SECRET}
+      - IOTA_SLACK_WEBHOOK_URL=${IOTA_SLACK_WEBHOOK_URL}
+    links:
+      - db:cryptomizr-db
