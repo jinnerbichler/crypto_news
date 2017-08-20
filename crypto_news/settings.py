@@ -114,15 +114,30 @@ USE_TZ = True
 
 LOGGING = {
     'version': 1,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(name)s %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
             'stream': sys.stdout,
+            'formatter': 'verbose'
         }
     },
-    'root': {
-        'handlers': ['console'],
-        'level': 'INFO'
+    'loggers': {
+        'tweepy.binder': {
+            'handlers': ['console'],
+            'level': 'WARNING'
+        },
+        '': {
+            'handlers': ['console'],
+            'level': 'INFO'
+        }
     }
 }
 
@@ -130,6 +145,26 @@ LOGGING = {
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+
+NOTIFIERS = {
+    'iota_slack': {
+        'type': 'slack',
+        'url': os.getenv('IOTA_SLACK_WEBHOOK_URL')
+    }
+}
+
+# Scraper definitions
+SCRAPERS = {
+    'IOTA': {
+        'scrapers': {
+            'twitter': {
+                'users': ['@iotatoken', '@IoTa2016', '@iotawallet', '@tangleblog'],
+                'hashtags': ['#iotatoken', '#iota', '#tangle'],
+            }
+        },
+        'notifiers': ['iota_slack']
+    }
+}
 
 # Twitter authentication
 TWITTER_API_KEY = os.getenv('TWITTER_API_KEY')
