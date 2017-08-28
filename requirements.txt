@@ -1,3 +1,4 @@
 django==1.11.4
 tweepy==3.5.0
 slackweb==1.0.5
+psycopg2

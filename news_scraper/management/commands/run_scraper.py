@@ -56,15 +56,16 @@ def init_notifiers():
 
 
 def schedule_scraping(scrapers):
-    ohlc_interval = 15  # in minutes
+
+    ohlc_interval = 10  # in minutes
     next_time = datetime.now() + timedelta(seconds=ohlc_interval * 60)
 
     def update():
         perform_scraping(scrapers=scrapers)
         schedule_scraping(scrapers=scrapers)
 
+    logger.info('Scheduling next scraping at {} (UTC)'.format(next_time))
     threading.Timer((next_time - datetime.now()).total_seconds(), update).start()
-    logger.info('Scheduled next scraping at {} (UTC)'.format(next_time))
 
 
 # noinspection PyBroadException
@@ -72,5 +73,5 @@ def perform_scraping(scrapers):
     for scraper in scrapers:
         try:
             scraper.scrape()
-        except:
+        except Exception as e:
             logger.exception('Error while scraping {}'.format(scraper))

@@ -158,7 +158,9 @@ SCRAPERS = {
     'IOTA': {
         'scrapers': {
             'twitter': {
-                'users': ['@iotatoken', '@IoTa2016', '@iotawallet', '@tangleblog'],
+                'users': ['@iotatoken', '@IoTa2016',
+                          '@iotawallet', '@tangleblog',
+                          '@DomSchiener ', '@DavidSonstebo'],
                 'hashtags': ['#iotatoken', '#iota', '#tangle'],
             }
         },

@@ -1,5 +1,8 @@
 from __future__ import unicode_literals
 from logging import getLogger
+
+import time
+import re
 from django.conf import settings
 from django.utils.timezone import make_aware, utc
 from news_scraper.models import Tweet
@@ -30,36 +33,44 @@ class Scraper:
 
         # search for tweets of users
         for user in self.users:
-            logger.debug('{} scraping {}'.format(self, user))
+            logger.info('{} scraping {}'.format(self, user))
             cursor = tweepy.Cursor(self.api.user_timeline, id=user, count=50)
-            for item in cursor.items(limit=50):
-                self._progress_item(item)
+            for tweet in cursor.items(limit=50):
+                self._progress_tweet(tweet)
+            time.sleep(0.5)
 
         # search for specific hashtags
         for hashtag in self.hashtags:
-            logger.debug('{} scraping {}'.format(self, hashtag))
+            logger.info('{} scraping {}'.format(self, hashtag))
             cursor = tweepy.Cursor(self.api.search, q=hashtag, count=50)
-            for item in cursor.items(limit=50):
-                self._progress_item(item)
+            for tweet in cursor.items(limit=50):
+                self._progress_tweet(tweet)
+            time.sleep(0.5)
 
-    def _progress_item(self, item):
+    def _progress_tweet(self, tweet):
 
-        is_new = not Tweet.objects.filter(identifier=item.id,
+        # filter tweet
+        is_new = not Tweet.objects.filter(identifier=tweet.id,
                                           linked_token=self.token_name).exists()
-        if is_new:
-            tweet = Tweet(created_at=make_aware(item.created_at, utc),
-                          creator=item.author.screen_name,
-                          text=item.text,
-                          identifier=item.id,
-                          linked_token=self.token_name)
-            tweet.save()
+        is_retweet = tweet.retweeted or ('RT @' in tweet.text)
+        contains_chinese = re.search(u'[\u4e00-\u9fff]', tweet.text)  # ToDo: translate
+
+        if is_new and not is_retweet and not contains_chinese:
+            tweet_to_store = Tweet(created_at=make_aware(tweet.created_at, utc),
+                                   creator=tweet.author.screen_name,
+                                   text=tweet.text,
+                                   identifier=tweet.id,
+                                   linked_token=self.token_name)
 
             for notifier in self.notifiers:
-                notifier.notify(title='New tweet from {}'.format(item.author.screen_name),
-                                message=item.text,
-                                url=construct_twitter_link(item))
+                notifier.notify(
+                    title='New tweet from {}'.format(tweet.author.screen_name),
+                    message=tweet.text,
+                    url=construct_twitter_link(tweet))
 
-            logger.info('Found new tweet {}'.format(tweet))
+            tweet_to_store.save()
+
+            logger.info('Found new tweet {}'.format(tweet_to_store))
 
     def __str__(self):
         return "<TwitterScraper {}>".format(self.token_name)
