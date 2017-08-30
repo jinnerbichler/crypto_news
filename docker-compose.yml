@@ -14,8 +14,6 @@ services:
   scraper:
     build: .
     entrypoint: /bin/bash ./entrypoint.sh run_scraper
-    ports:
-     - "80:8000"
     environment:
       - DJANGO_SETTINGS_MODULE=crypto_news.docker_settings
       - POSTGRES_USER=${POSTGRES_USER}
@@ -25,5 +23,6 @@ services:
       - TWITTER_ACCESS_TOKEN=${TWITTER_ACCESS_TOKEN}
       - TWITTER_ACCESS_TOKEN_SECRET=${TWITTER_ACCESS_TOKEN_SECRET}
       - IOTA_SLACK_WEBHOOK_URL=${IOTA_SLACK_WEBHOOK_URL}
+    restart: on-failure
     links:
       - db:cryptonews-db

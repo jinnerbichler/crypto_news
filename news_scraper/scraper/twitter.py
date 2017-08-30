@@ -17,6 +17,7 @@ class Scraper:
         self.token_name = token_name
         self.users = config['users']
         self.hashtags = config['hashtags']
+        self.excluded_authors = config['exclude_users']
         self.notifiers = notifiers
 
         # setup authentication
@@ -54,8 +55,10 @@ class Scraper:
                                           linked_token=self.token_name).exists()
         is_retweet = tweet.retweeted or ('RT @' in tweet.text)
         contains_chinese = re.search(u'[\u4e00-\u9fff]', tweet.text)  # ToDo: translate
+        author_name = tweet.author.screen_name
+        is_author_excluded = '@{}'.format(author_name).lower() in self.excluded_authors
 
-        if is_new and not is_retweet and not contains_chinese:
+        if is_new and not is_retweet and not contains_chinese and not is_author_excluded:
             tweet_to_store = Tweet(created_at=make_aware(tweet.created_at, utc),
                                    creator=tweet.author.screen_name,
                                    text=tweet.text,
@@ -64,13 +67,13 @@ class Scraper:
 
             for notifier in self.notifiers:
                 notifier.notify(
-                    title='New tweet from {}'.format(tweet.author.screen_name),
+                    title='New Tweet from {}'.format(tweet.author.screen_name),
                     message=tweet.text,
                     url=construct_twitter_link(tweet))
 
             tweet_to_store.save()
 
-            logger.info('Found new tweet {}'.format(tweet_to_store))
+            logger.info('Found new Tweet {}'.format(tweet_to_store))
 
     def __str__(self):
         return "<TwitterScraper {}>".format(self.token_name)

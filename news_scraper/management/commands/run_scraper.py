@@ -57,7 +57,7 @@ def init_notifiers():
 
 def schedule_scraping(scrapers):
 
-    ohlc_interval = 10  # in minutes
+    ohlc_interval = 60  # in minutes
     next_time = datetime.now() + timedelta(seconds=ohlc_interval * 60)
 
     def update():
