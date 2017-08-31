@@ -1,5 +1,9 @@
 # CryptoNewsBot
 
+## Docker support
+
+Simply run `docker-compose up --build` with proper environment variable set, in order to start the scraper.
+
 ## Configuration
 
 The central configuration is stored in `./crypto_news/settings.py` and consists of two main fields (i.e. `NOTIFIERS` and `SCRAPERS`).
