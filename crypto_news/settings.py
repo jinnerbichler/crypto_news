@@ -150,6 +150,10 @@ NOTIFIERS = {
     'iota_slack': {
         'type': 'slack',
         'url': os.getenv('IOTA_SLACK_WEBHOOK_URL')
+    },
+    'modum_io_slack': {
+        'type': 'slack',
+        'url': os.getenv('MODUM_SLACK_WEBHOOK_URL')
     }
 }
 
@@ -160,10 +164,21 @@ SCRAPERS = {
             'twitter': {
                 'users': ['@iotatoken', '@tangleblog', '@DomSchiener ', '@DavidSonstebo'],
                 'hashtags': ['#iotatoken', '#iota'],
-                'exclude_users': ['@coinstats', '@analysisinchain', '@iota_market']
+                'exclude_users': ['@coinstats', '@analysisinchain',
+                                  '@iota_market', '@dx_alert']
             }
         },
         'notifiers': ['iota_slack']
+    },
+    'MODUM_IO': {
+        'scrapers': {
+            'twitter': {
+                'users': ['@modum_io'],
+                'hashtags': ['#modum'],
+                'exclude_users': []
+            }
+        },
+        'notifiers': ['modum_io_slack']
     }
 }
 

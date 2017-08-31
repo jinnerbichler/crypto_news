@@ -73,5 +73,5 @@ def perform_scraping(scrapers):
     for scraper in scrapers:
         try:
             scraper.scrape()
-        except Exception as e:
+        except:
             logger.exception('Error while scraping {}'.format(scraper))
