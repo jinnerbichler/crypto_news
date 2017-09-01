@@ -154,6 +154,18 @@ NOTIFIERS = {
     'modum_io_slack': {
         'type': 'slack',
         'url': os.getenv('MODUM_SLACK_WEBHOOK_URL')
+    },
+    'etc_slack': {
+        'type': 'slack',
+        'url': os.getenv('ETC_SLACK_WEBHOOK_URL')
+    },
+    'ltc_slack': {
+        'type': 'slack',
+        'url': os.getenv('LTC_SLACK_WEBHOOK_URL')
+    },
+    'bch_slack': {
+        'type': 'slack',
+        'url': os.getenv('BCH_SLACK_WEBHOOK_URL')
     }
 }
 
@@ -179,6 +191,36 @@ SCRAPERS = {
             }
         },
         'notifiers': ['modum_io_slack']
+    },
+    'ETC': {
+        'scrapers': {
+            'twitter': {
+                'users': ['@eth_classic'],
+                'hashtags': ['#ethereumclassic', '#etc'],
+                'exclude_users': ['@ethclassicmarkt', '@btcprospectus']
+            }
+        },
+        'notifiers': ['etc_slack']
+    },
+    'LTC': {
+        'scrapers': {
+            'twitter': {
+                'users': ['@LitecoinProject', '@LiteCoinNews', '@SatoshiLite'],
+                'hashtags': ['#litecoin'],
+                'exclude_users': []
+            }
+        },
+        'notifiers': ['ltc_slack']
+    },
+    'BCH': {
+        'scrapers': {
+            'twitter': {
+                'users': ['@bitcoincash', '@BitcoinCashFans'],
+                'hashtags': ['#Bitcoincash'],
+                'exclude_users': []
+            }
+        },
+        'notifiers': ['bch_slack']
     }
 }
 
