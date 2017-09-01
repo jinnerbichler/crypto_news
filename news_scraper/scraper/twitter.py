@@ -4,6 +4,7 @@ from logging import getLogger
 import time
 import re
 from django.conf import settings
+from django.db import IntegrityError
 from django.utils.timezone import make_aware, utc
 from news_scraper.models import Tweet
 
@@ -55,25 +56,33 @@ class Scraper:
                                           linked_token=self.token_name).exists()
         is_retweet = tweet.retweeted or ('RT @' in tweet.text)
         contains_chinese = re.search(u'[\u4e00-\u9fff]', tweet.text)  # ToDo: translate
-        author_name = tweet.author.screen_name
-        is_author_excluded = '@{}'.format(author_name).lower() in self.excluded_authors
+        screen_name = tweet.author.screen_name
+        is_author_excluded = '@{}'.format(screen_name).lower() in self.excluded_authors
+        has_enough_followers = tweet.author.followers_count > settings.FOLLOWERS_THRESH
 
-        if is_new and not is_retweet and not contains_chinese and not is_author_excluded:
+        if is_new \
+                and not is_retweet \
+                and not contains_chinese \
+                and not is_author_excluded \
+                and has_enough_followers:
             tweet_to_store = Tweet(created_at=make_aware(tweet.created_at, utc),
                                    creator=tweet.author.screen_name,
                                    text=tweet.text,
                                    identifier=tweet.id,
                                    linked_token=self.token_name)
 
-            for notifier in self.notifiers:
-                notifier.notify(
-                    title='New Tweet from {}'.format(tweet.author.screen_name),
-                    message=tweet.text,
-                    url=construct_twitter_link(tweet))
+            try:
+                tweet_to_store.save()
+            except IntegrityError:
+                pass
+            else:
+                for notifier in self.notifiers:
+                    notifier.notify(
+                        title='New Tweet from {}'.format(tweet.author.screen_name),
+                        message=tweet.text,
+                        url=construct_twitter_link(tweet))
 
-            tweet_to_store.save()
-
-            logger.info('Found new Tweet {}'.format(tweet_to_store))
+                logger.info('Found new Tweet {}'.format(tweet_to_store))
 
     def __str__(self):
         return "<TwitterScraper {}>".format(self.token_name)

@@ -224,6 +224,9 @@ SCRAPERS = {
     }
 }
 
+FOLLOWERS_THRESH = 1000
+UPDATE_INTERVAL = 30  # in minutes
+
 # Twitter authentication
 TWITTER_API_KEY = os.getenv('TWITTER_API_KEY')
 TWITTER_API_SECRET = os.getenv('TWITTER_API_SECRET')
