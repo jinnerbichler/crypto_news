@@ -19,13 +19,14 @@ class Command(BaseCommand):
         scrapers = init_scrapers(notifiers=notifiers)
 
         # perform periodic scraping
-        perform_scraping(scrapers=scrapers)
-        schedule_scraping(scrapers=scrapers)
+        for scraper in scrapers:
+            perform_scraping(scraper=scraper)
+            schedule_scraping(scraper=scraper)
 
 
 def init_scrapers(notifiers):
     scrapers = []
-    for scraped_token, token_config in settings.SCRAPERS.items():
+    for identifier, token_config in settings.SCRAPERS.items():
 
         scraper_notifiers = [notifiers[n] for n in token_config['notifiers']]
         for scraper_type, scraper_config in token_config['scrapers'].items():
@@ -36,7 +37,7 @@ def init_scrapers(notifiers):
                 scraper_module = importlib.import_module(scraper_module_path)
 
                 # instantiate scraper
-                scraper = scraper_module.Scraper(token_name=scraped_token,
+                scraper = scraper_module.Scraper(identifier=identifier,
                                                  config=scraper_config,
                                                  notifiers=scraper_notifiers)
 
@@ -55,23 +56,21 @@ def init_notifiers():
     return notifiers
 
 
-def schedule_scraping(scrapers):
-
-    ohlc_interval = settings.UPDATE_INTERVAL  # in minutes
-    next_time = datetime.now() + timedelta(seconds=ohlc_interval * 60)
+def schedule_scraping(scraper):
 
     def update():
-        perform_scraping(scrapers=scrapers)
-        schedule_scraping(scrapers=scrapers)
+        perform_scraping(scraper=scraper)
+        schedule_scraping(scraper=scraper)
 
-    logger.info('Scheduling next scraping at {} (UTC)'.format(next_time))
+    ohlc_interval = scraper.update_interval
+    next_time = datetime.now() + timedelta(seconds=ohlc_interval * 60)
+    logger.info('Scheduling next scraping of {} at {} (UTC)'.format(scraper, next_time))
     threading.Timer((next_time - datetime.now()).total_seconds(), update).start()
 
 
 # noinspection PyBroadException
-def perform_scraping(scrapers):
-    for scraper in scrapers:
-        try:
-            scraper.scrape()
-        except:
-            logger.exception('Error while scraping {}'.format(scraper))
+def perform_scraping(scraper):
+    try:
+        scraper.scrape()
+    except:
+        logger.exception('Error while scraping {}'.format(scraper))

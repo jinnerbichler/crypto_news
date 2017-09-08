@@ -15,7 +15,7 @@ services:
     build: .
     entrypoint: /bin/bash ./entrypoint.sh run_scraper
     environment:
-      - DJANGO_SETTINGS_MODULE=crypto_news.docker_settings
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - TWITTER_API_KEY=${TWITTER_API_KEY}
@@ -24,9 +24,6 @@ services:
       - TWITTER_ACCESS_TOKEN_SECRET=${TWITTER_ACCESS_TOKEN_SECRET}
       - IOTA_SLACK_WEBHOOK_URL=${IOTA_SLACK_WEBHOOK_URL}
       - MODUM_SLACK_WEBHOOK_URL=${MODUM_SLACK_WEBHOOK_URL}
-      - ETC_SLACK_WEBHOOK_URL=${ETC_SLACK_WEBHOOK_URL}
-      - LTC_SLACK_WEBHOOK_URL=${LTC_SLACK_WEBHOOK_URL}
-      - BCH_SLACK_WEBHOOK_URL=${BCH_SLACK_WEBHOOK_URL}
     restart: on-failure
     links:
       - db:cryptonews-db

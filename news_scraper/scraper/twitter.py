@@ -14,8 +14,11 @@ logger = getLogger(__name__)
 
 
 class Scraper:
-    def __init__(self, token_name, config, notifiers):
-        self.token_name = token_name
+
+    update_interval = settings.TWITTER_UPDATE_INTERVAL
+
+    def __init__(self, identifier, config, notifiers):
+        self.identifier = identifier
         self.users = config['users']
         self.hashtags = config['hashtags']
         self.excluded_authors = config['exclude_users']
@@ -53,12 +56,13 @@ class Scraper:
 
         # filter tweet
         is_new = not Tweet.objects.filter(identifier=tweet.id,
-                                          linked_token=self.token_name).exists()
+                                          linked_token=self.identifier).exists()
         is_retweet = tweet.retweeted or ('RT @' in tweet.text)
         contains_chinese = re.search(u'[\u4e00-\u9fff]', tweet.text)  # ToDo: translate
         screen_name = tweet.author.screen_name
         is_author_excluded = '@{}'.format(screen_name).lower() in self.excluded_authors
-        has_enough_followers = tweet.author.followers_count > settings.FOLLOWERS_THRESH
+        followers_count = tweet.author.followers_count
+        has_enough_followers = followers_count > settings.TWITTER_FOLLOWERS_THRESH
 
         if is_new \
                 and not is_retweet \
@@ -69,7 +73,7 @@ class Scraper:
                                    creator=tweet.author.screen_name,
                                    text=tweet.text,
                                    identifier=tweet.id,
-                                   linked_token=self.token_name)
+                                   linked_token=self.identifier)
 
             try:
                 tweet_to_store.save()
@@ -85,7 +89,7 @@ class Scraper:
                 logger.info('Found new Tweet {}'.format(tweet_to_store))
 
     def __str__(self):
-        return "<TwitterScraper {}>".format(self.token_name)
+        return "<TwitterScraper {}>".format(self.identifier)
 
 
 def construct_twitter_link(status):

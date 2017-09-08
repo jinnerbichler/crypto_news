@@ -114,6 +114,7 @@ USE_TZ = True
 
 LOGGING = {
     'version': 1,
+    'disable_existing_loggers': True,
     'formatters': {
         'verbose': {
             'format': '%(levelname)s %(asctime)s %(name)s %(message)s'
@@ -130,13 +131,17 @@ LOGGING = {
         }
     },
     'loggers': {
-        'tweepy.binder': {
-            'handlers': ['console'],
-            'level': 'WARNING'
-        },
         '': {
             'handlers': ['console'],
-            'level': 'INFO'
+            'level': 'WARNING',
+            'propagate': False
+
+        },
+        'news_scraper': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False
+
         }
     }
 }
@@ -154,18 +159,6 @@ NOTIFIERS = {
     'modum_io_slack': {
         'type': 'slack',
         'url': os.getenv('MODUM_SLACK_WEBHOOK_URL')
-    },
-    'etc_slack': {
-        'type': 'slack',
-        'url': os.getenv('ETC_SLACK_WEBHOOK_URL')
-    },
-    'ltc_slack': {
-        'type': 'slack',
-        'url': os.getenv('LTC_SLACK_WEBHOOK_URL')
-    },
-    'bch_slack': {
-        'type': 'slack',
-        'url': os.getenv('BCH_SLACK_WEBHOOK_URL')
     }
 }
 
@@ -192,43 +185,26 @@ SCRAPERS = {
         },
         'notifiers': ['modum_io_slack']
     },
-    'ETC': {
+    'HACKED': {
         'scrapers': {
-            'twitter': {
-                'users': ['@eth_classic'],
-                'hashtags': ['#ethereumclassic', '#etc'],
-                'exclude_users': ['@ethclassicmarkt', '@btcprospectus']
-            }
+            'hacked': {}
         },
-        'notifiers': ['etc_slack']
-    },
-    'LTC': {
-        'scrapers': {
-            'twitter': {
-                'users': ['@LitecoinProject', '@LiteCoinNews', '@SatoshiLite'],
-                'hashtags': ['#litecoin'],
-                'exclude_users': []
-            }
-        },
-        'notifiers': ['ltc_slack']
-    },
-    'BCH': {
-        'scrapers': {
-            'twitter': {
-                'users': ['@bitcoincash', '@BitcoinCashFans'],
-                'hashtags': ['#Bitcoincash'],
-                'exclude_users': []
-            }
-        },
-        'notifiers': ['bch_slack']
+        'notifiers': []
     }
 }
 
-FOLLOWERS_THRESH = 1000
-UPDATE_INTERVAL = 30  # in minutes
+TWITTER_FOLLOWERS_THRESH = 500
+TWITTER_UPDATE_INTERVAL = 30  # in minutes
 
 # Twitter authentication
 TWITTER_API_KEY = os.getenv('TWITTER_API_KEY')
 TWITTER_API_SECRET = os.getenv('TWITTER_API_SECRET')
 TWITTER_ACCESS_TOKEN = os.getenv('TWITTER_ACCESS_TOKEN')
 TWITTER_ACCESS_TOKEN_SECRET = os.getenv('TWITTER_ACCESS_TOKEN_SECRET')
+
+CRAWLER_DEFAULTS = {
+    'USER_AGENT': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)',
+    'TELNETCONSOLE_ENABLED': False,
+    'LOG_ENABLED': False,
+    'LOG_FORMATTER': 'news_scraper.scraper.pipelines.PoliteLogFormatter',
+}
