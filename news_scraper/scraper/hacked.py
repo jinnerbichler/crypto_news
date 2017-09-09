@@ -52,6 +52,10 @@ class HackedSpider(Spider):
         for div in article_soup.find_all('div', {'class': 'code-block'}):
             div.decompose()
 
+        # remove tables
+        for table in article_soup.find_all('table'):
+            table.decompose()
+
         item = {
             'crawler_id': self.name,
             'title': response.css('#posttitle::text').extract_first().strip(),

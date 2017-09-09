@@ -6,3 +6,4 @@ scrapy==1.4.0
 nltk==3.2.4
 psycopg2
 datefinder==0.6.1
+scrapy-fake-useragent==1.1.0

@@ -139,6 +139,12 @@ LOGGING = {
         },
         'news_scraper': {
             'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False
+
+        },
+        'requests': {
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': False
 
@@ -152,6 +158,12 @@ CRAWLER_DEFAULTS = {
     'TELNETCONSOLE_ENABLED': False,
     'LOG_ENABLED': False,
     'LOG_FORMATTER': 'news_scraper.scraper.pipelines.PoliteLogFormatter',
+    'DOWNLOAD_DELAY': 0.25,
+    'CONCURRENT_REQUESTS_PER_DOMAIN': 1,
+    'DOWNLOADER_MIDDLEWARES': {
+        'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+        'scrapy_fake_useragent.middleware.RandomUserAgentMiddleware': 400,
+    }
 }
 
 # Stanford CoreNLP settings
