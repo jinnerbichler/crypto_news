@@ -48,6 +48,10 @@ class HackedSpider(Spider):
         article_raw = response.css('.posts article .postbody').extract_first()
         article_soup = BeautifulSoup(article_raw, 'lxml')
 
+        # remove ads
+        for div in article_soup.find_all('div', {'class': 'code-block'}):
+            div.decompose()
+
         item = {
             'crawler_id': self.name,
             'title': response.css('#posttitle::text').extract_first().strip(),

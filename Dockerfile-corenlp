@@ -1,0 +1,22 @@
+FROM java:jre-alpine
+
+RUN apk add --update --no-cache \
+	 unzip \
+	 wget
+
+ENV CORENLP_VERSION=stanford-corenlp-full-2017-06-09
+RUN wget http://nlp.stanford.edu/software/${CORENLP_VERSION}.zip
+RUN unzip ${CORENLP_VERSION}.zip && \
+	rm ${CORENLP_VERSION}.zip
+
+WORKDIR ${CORENLP_VERSION}
+RUN touch StanfordCoreNLP.properties
+
+RUN export CLASSPATH="`find . -name '*.jar'`"
+
+ENV PORT 9000
+
+EXPOSE $PORT
+
+CMD java -cp "*" -mx4g edu.stanford.nlp.pipeline.StanfordCoreNLPServer \
+    -timeout 50000
