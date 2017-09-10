@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -e    # Exit immediately if a command exits with a non-zero status.
+
+if [ "$1" == "dev-setup" ]; then
+
+    source ./private_dev.sh
+    docker-compose up -d --build db corenlp
+    docker-compose logs -f corenlp
+
+elif [ "$1" == "set-static" ]; then
+
+    # TODO set static distribution in data base
+    echo "dummy"
+
+fi

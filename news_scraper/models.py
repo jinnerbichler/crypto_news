@@ -29,9 +29,9 @@ class NewsArticle(models.Model):
 
     # noinspection PyRedundantParentheses
     class Meta:
-        unique_together = (('crawler_id', 'title', 'text'))
+        unique_together = (('crawler_id', 'title', 'url'))
         verbose_name = 'News Article'
         verbose_name_plural = 'News Articles'
 
     def __str__(self):
-        return '<NewsArticle {} from {}'.format(self.title, self.url)
+        return '<NewsArticle {} from {}>'.format(self.title, self.url)

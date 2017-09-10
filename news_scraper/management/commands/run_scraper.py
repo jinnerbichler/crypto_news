@@ -12,6 +12,7 @@ class Command(BaseCommand):
     help = 'Runs scrapers with configured plugins'
 
     def handle(self, *args, **options):
+
         # initialise notifier
         notifiers = init_notifiers()
 

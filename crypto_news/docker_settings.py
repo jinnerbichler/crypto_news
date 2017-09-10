@@ -16,7 +16,7 @@ DATABASES = {
 
 ALLOWED_HOSTS = ['*']
 
-CORENLP_ENDPOINT = 'http://corenlp:9000'
+CORENLP_ENDPOINT = 'http://corenlp-server:9000'
 
 # # set proper log levels
 # LOGGING['loggers']['agent']['level'] = 'DEBUG'

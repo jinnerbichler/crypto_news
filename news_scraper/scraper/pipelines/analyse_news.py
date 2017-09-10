@@ -12,6 +12,8 @@ class AnalyseNewsPipeline(object):
     def process_item(self, item, spider):
         text = item['text']
 
+        logger.info('NLP endpoint: {}'.format(settings.CORENLP_ENDPOINT))
+
         with CoreNLPClient(annotators="tokenize ssplit depparse ner".split(),
                            start_server=False,
                            endpoint=settings.CORENLP_ENDPOINT) as client:
