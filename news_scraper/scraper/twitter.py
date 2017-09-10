@@ -1,96 +1,131 @@
 from __future__ import unicode_literals
 from logging import getLogger
-
-import time
-import re
-from django.conf import settings
-from django.db import IntegrityError
-from django.utils.timezone import make_aware, utc
-from news_scraper.models import Tweet
-
+import scrapy
+from scrapy.http import Request, Response
 import tweepy
+from django.conf import settings
+
+from news_scraper.scraper import start_scraping
 
 logger = getLogger(__name__)
 
 
 class Scraper:
-
     update_interval = settings.TWITTER_UPDATE_INTERVAL
 
     def __init__(self, identifier, config, notifiers):
+        self.config = config
         self.identifier = identifier
-        self.users = config['users']
-        self.hashtags = config['hashtags']
-        self.excluded_authors = config['exclude_users']
         self.notifiers = notifiers
-
-        # setup authentication
-        auth = tweepy.OAuthHandler(settings.TWITTER_API_KEY,
-                                   settings.TWITTER_API_SECRET)
-        auth.set_access_token(settings.TWITTER_ACCESS_TOKEN,
-                              settings.TWITTER_ACCESS_TOKEN_SECRET)
-        self.api = tweepy.API(auth)
 
         logger.info('{} initialised'.format(self))
 
     def scrape(self):
-        logger.info('{} start scraping'.format(self))
+        crawler_config = {
+            'ITEM_PIPELINES': {
+                'news_scraper.scraper.pipelines.twitter.TwitterPipeline': 100,
+                # 'news_scraper.scraper.pipelines.analyse.AnalysePipeline': 800
+            },
+            'DOWNLOADER_MIDDLEWARES': {
+                'news_scraper.scraper.twitter.TwitterDownloaderMiddleware': 10
+            }
+        }
 
-        # search for tweets of users
-        for user in self.users:
-            logger.info('{} scraping {}'.format(self, user))
-            cursor = tweepy.Cursor(self.api.user_timeline, id=user, count=50)
-            for tweet in cursor.items(limit=50):
-                self._progress_tweet(tweet)
-            time.sleep(0.5)
-
-        # search for specific hashtags
-        for hashtag in self.hashtags:
-            logger.info('{} scraping {}'.format(self, hashtag))
-            cursor = tweepy.Cursor(self.api.search, q=hashtag, count=50)
-            for tweet in cursor.items(limit=50):
-                self._progress_tweet(tweet)
-            time.sleep(0.5)
-
-    def _progress_tweet(self, tweet):
-
-        # filter tweet
-        is_new = not Tweet.objects.filter(identifier=tweet.id,
-                                          linked_token=self.identifier).exists()
-        is_retweet = tweet.retweeted or ('RT @' in tweet.text)
-        contains_chinese = re.search(u'[\u4e00-\u9fff]', tweet.text)  # ToDo: translate
-        screen_name = tweet.author.screen_name
-        is_author_excluded = '@{}'.format(screen_name).lower() in self.excluded_authors
-        followers_count = tweet.author.followers_count
-        has_enough_followers = followers_count > settings.TWITTER_FOLLOWERS_THRESH
-
-        if is_new \
-                and not is_retweet \
-                and not contains_chinese \
-                and not is_author_excluded \
-                and has_enough_followers:
-            tweet_to_store = Tweet(created_at=make_aware(tweet.created_at, utc),
-                                   creator=tweet.author.screen_name,
-                                   text=tweet.text,
-                                   identifier=tweet.id,
-                                   linked_token=self.identifier)
-
-            try:
-                tweet_to_store.save()
-            except IntegrityError:
-                pass
-            else:
-                for notifier in self.notifiers:
-                    notifier.notify(
-                        title='New Tweet from {}'.format(tweet.author.screen_name),
-                        message=tweet.text,
-                        url=construct_twitter_link(tweet))
-
-                logger.info('Found new Tweet {}'.format(tweet_to_store))
+        start_scraping(spider_config=crawler_config,
+                       spiders=[(TwitterSpider, {'linked_coin': self.identifier,
+                                                 'config': self.config,
+                                                 'notifiers': self.notifiers})])
 
     def __str__(self):
         return "<TwitterScraper {}>".format(self.identifier)
 
 
-def construct_twitter_link(status):
-    return 'https://twitter.com/statuses/{}'.format(status.id)
+class TwitterSpider(scrapy.Spider):
+    name = "twitter-user-timeline"
+    allowed_domains = ["twitter.com"]
+
+    def __init__(self, linked_coin=None, config=None, notifiers=None, *args,
+                 **kwargs):
+        if not linked_coin or not config or notifiers is None:
+            raise scrapy.exceptions.CloseSpider('Invalid arguments...')
+        super(TwitterSpider, self).__init__(*args, **kwargs)
+
+        self.linked_coin = linked_coin
+        self.notifiers = notifiers
+        self.users = config['users']
+        self.hashtags = config['hashtags']
+        self.excluded_authors = config['exclude_users']
+        self.count = 50
+
+    def start_requests(self):
+        requests = [TwitterUserTimelineRequest(screen_name=sn, count=self.count)
+                    for sn in self.users]
+        requests += [TwitterHashtagRequest(hashtag=ht, count=self.count)
+                    for ht in self.hashtags]
+        return requests
+
+    def parse(self, response):
+        for tweet in response.tweets:
+            yield {'tweet': tweet}
+
+
+# noinspection PyUnusedLocal
+class TwitterUserTimelineRequest(Request):
+    def __init__(self, *args, **kwargs):
+        self.screen_name = kwargs.pop('screen_name', None)
+        self.count = kwargs.pop('count', None)
+        super(TwitterUserTimelineRequest, self).__init__('http://twitter.com',
+                                                         dont_filter=True,
+                                                         **kwargs)
+
+
+# noinspection PyUnusedLocal
+class TwitterHashtagRequest(Request):
+    def __init__(self, *args, **kwargs):
+        self.hashtag = kwargs.pop('hashtag', None)
+        self.count = kwargs.pop('count', None)
+        super(TwitterHashtagRequest, self).__init__('http://twitter.com',
+                                                    dont_filter=True,
+                                                    **kwargs)
+
+
+class TwitterResponse(Response):
+    def __init__(self, *args, **kwargs):
+        self.tweets = kwargs.pop('tweets', None)
+        super(TwitterResponse, self).__init__('http://twitter.com', *args, **kwargs)
+
+
+# noinspection PyUnusedLocal,PyMethodMayBeStatic
+class TwitterDownloaderMiddleware(object):
+    def __init__(self, api_key, api_secret, access_token_key, access_token_secret):
+        # setup authentication
+        auth = tweepy.OAuthHandler(api_key, api_secret)
+        auth.set_access_token(access_token_key, access_token_secret)
+        self.api = tweepy.API(auth)
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        api_key = settings.TWITTER_API_KEY
+        api_secret = settings.TWITTER_API_SECRET
+        access_token_key = settings.TWITTER_ACCESS_TOKEN
+        access_token_secret = settings.TWITTER_ACCESS_TOKEN_SECRET
+        return cls(api_key, api_secret, access_token_key, access_token_secret)
+
+    def process_request(self, request, spider):
+
+        # timeline
+        tweets = []
+        if isinstance(request, TwitterUserTimelineRequest):
+            tweets = tweepy.Cursor(self.api.user_timeline,
+                                   id=request.screen_name,
+                                   count=request.count)
+        # hashtags
+        elif isinstance(request, TwitterHashtagRequest):
+            tweets = tweepy.Cursor(self.api.search,
+                                   q=request.hashtag,
+                                   count=request.count)
+
+        return TwitterResponse(tweets=[t for t in tweets.items(limit=request.count)])
+
+    def process_response(self, request, response, spider):
+        return response

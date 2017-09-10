@@ -148,6 +148,18 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False
 
+        },
+        'oauthlib': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False
+
+        },
+        'requests_oauthlib': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False
+
         }
     }
 }

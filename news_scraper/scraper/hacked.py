@@ -1,12 +1,12 @@
 from __future__ import unicode_literals
+
 from logging import getLogger
-from django.conf import settings
-from multiprocessing import Process
+
 from scrapy import Spider
-from scrapy.crawler import CrawlerProcess, CrawlerRunner
 # noinspection PyPackageRequirements
 from bs4 import BeautifulSoup
-from twisted.internet import reactor
+
+from news_scraper.scraper import start_scraping
 
 logger = getLogger(__name__)
 
@@ -20,21 +20,12 @@ class Scraper:
         self.notifiers = notifiers
 
     def scrape(self):
-        crawler_config = settings.CRAWLER_DEFAULTS.copy()
-        crawler_config['ITEM_PIPELINES'] = {
-            # 'news_scraper.scraper.pipelines.analyse_news.AnalyseNewsPipeline': 800,
-            'news_scraper.scraper.pipelines.store_news.StoreNewsPipeline': 900
+        crawler_config = {'ITEM_PIPELINES': {
+            'news_scraper.scraper.pipelines.analyse.AnalysePipeline': 800,
+            'news_scraper.scraper.pipelines.news.StoreNewsPipeline': 900}
         }
 
-        # start crawling
-        def start_crawling():
-            process = CrawlerProcess(crawler_config)
-            process.crawl(HackedSpider)
-            process.start(stop_after_crawl=True)
-
-        p = Process(target=start_crawling)
-        p.start()
-        p.join()
+        start_scraping(spider_config=crawler_config, spiders=[HackedSpider])
 
     def __str__(self):
         return "<HackedComScraper {}>".format(self.identifier)

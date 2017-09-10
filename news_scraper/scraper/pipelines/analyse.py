@@ -5,14 +5,12 @@ from corenlp import CoreNLPClient
 logger = logging.getLogger(__name__)
 
 
-class AnalyseNewsPipeline(object):
+class AnalysePipeline(object):
     """Pipeline that analyses news items for certain insights"""
 
     # noinspection PyUnusedLocal,PyMethodMayBeStatic
     def process_item(self, item, spider):
         text = item['text']
-
-        logger.info('NLP endpoint: {}'.format(settings.CORENLP_ENDPOINT))
 
         with CoreNLPClient(annotators="tokenize ssplit depparse ner".split(),
                            start_server=False,

@@ -7,6 +7,7 @@ class Tweet(models.Model):
     creator = models.TextField(default='')
     identifier = models.TextField(unique=True)
     linked_token = models.CharField(max_length=10)
+    text = models.TextField(default='')
 
     # noinspection PyRedundantParentheses
     class Meta:
