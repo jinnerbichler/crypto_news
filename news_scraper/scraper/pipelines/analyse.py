@@ -2,8 +2,6 @@ import logging
 from datetime import datetime
 
 import datefinder
-from django.conf import settings
-from corenlp import CoreNLPClient
 
 from news_scraper.notifier import get_notifier
 
@@ -15,19 +13,20 @@ class AnalysePipeline(object):
 
     # noinspection PyUnusedLocal,PyMethodMayBeStatic
     def process_item(self, item, spider):
-        notifier = get_notifier(notifier_id='date_found')
+        notifier = get_notifier(notifier_id="date_found")
 
-        text = item['text']
-        for date, source in datefinder.find_dates(text, source=True, base_date=datetime.now()):
+        text = item["text"]
+        for date, source in datefinder.find_dates(text, source=True,
+                                                  base_date=datetime.now()):  # ToDO: set proper base date
 
-            logger.info('Found date {} in {}'.format(date, item['title']))
+            logger.info("Found date {} in {}".format(date, item["title"]))
 
             # filter false positives
             if not is_false_positive(source):
                 if notifier:
-                    notifier.notify(title='Found date in {}'.format(item['title']),
+                    notifier.notify(title="Found date in {}".format(item["title"]),
                                     message='Found {} in "{}"'.format(date, source),
-                                    url=item['url'])
+                                    url=item["url"])
 
         # with CoreNLPClient(annotators="tokenize ssplit depparse ner".split(),
         #                    start_server=False,
@@ -38,25 +37,69 @@ class AnalysePipeline(object):
 
 
 def is_false_positive(date_source):
+    if date_source is None or len(date_source) == 0:
+        return True
+
     tokens = date_source.split()
 
     # filter years (e.g. 2017)
     if date_source.isdigit():
         return True
 
-    # filter sources like "500, 4"
-    if any(len(t) == 1 for t in tokens):
+    # filter sources like "16th"
+    if len(tokens) == 1 and any(date_source.endswith(e) for e in ["st", "nd", "rd", "th"]):
         return True
 
-    # to filter:
-    # "at 2305"
-    # "to mar"
-    # "330, at"
-    # "20, at"
-    # "of 54"
-    # "of 147,233"
-    # "16th"
-    # "of 90"
-    # "by mar"
+    # filter tokens like "330, at" or "20, at"
+    if tokens[0].endswith(',') and not tokens[-1].isdigit():
+        return True
+
+    # filter sources like "at 2305" or "at 2305"
+    if len(tokens) == 2 and len(tokens[0]) == 2 and tokens[-1].isdigit():
+        return True
+
+    # filter sources like "by mar" or "to mar"
+    if len(tokens) == 2 and len(tokens[0]) == 2 and not tokens[0].isdigit() \
+            and all(not c.isdigit() and c.islower() for c in tokens[-1]):
+        return True
+
+    # filter sources like "of 147,233"
+    if len(tokens) == 2 and len(tokens[0]) == 2 and all(s.isdigit() for s in tokens[-1].split(",")):
+        return True
+
+    # filter sources like "may"
+    if "may" in date_source:
+        return True
+
+    # filter tokes like "on to mon" or "of 155 sat"
+    if len(tokens[-1]) == 3 and all(not c.isdigit() and c.islower() for c in tokens[-1]):
+        return True
+
+    # filter sources like "500, 4"
+    if len(tokens[-1]) == 1 and tokens[-1].isdigit():
+        return True
+
+    # filter tokes like "t 2017" or "t 12"
+    if len(tokens) == 2 and len(tokens[0]) == 1 and tokens[0].isalpha() and tokens[-1].isdigit():
+        return True
+
+    # filter tokes like "7 T"
+    if len(tokens) == 2 and tokens[0].isdigit() and tokens[-1].isalpha() and len(tokens[-1]) == 1:
+        return True
+
+    for token in tokens:
+        # filter sources like "f" or "4,327"
+        if ',' in token and any(st.isdigit() for st in token.split(",")):
+            return True
+
+        # filter three digit letters
+        if len(token) == 3 and token.isdigit():
+            return True
+
+        # filter tokens like "08t2", "2t" or "33d"
+        num_digits = len([c for c in token if c.isdigit()])
+        num_letters = len([c for c in token if c.isalpha()])
+        if num_letters == 1 and num_digits > 0:
+            return True
 
     return False
