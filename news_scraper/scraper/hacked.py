@@ -20,12 +20,15 @@ class Scraper:
         self.notifiers = notifiers
 
     def scrape(self):
-        crawler_config = {'ITEM_PIPELINES': {
-            'news_scraper.scraper.pipelines.analyse.AnalysePipeline': 800,
-            'news_scraper.scraper.pipelines.news.StoreNewsPipeline': 900}
+        crawler_config = {
+            'ITEM_PIPELINES': {
+                'news_scraper.scraper.pipelines.news.StoreNewsPipeline': 800,
+                'news_scraper.scraper.pipelines.analyse.AnalysePipeline': 900,
+            }
         }
 
-        start_scraping(spider_config=crawler_config, spiders=[HackedSpider])
+        start_scraping(spider_config=crawler_config,
+                       spiders=[(HackedSpider, {})])
 
     def __str__(self):
         return "<HackedComScraper {}>".format(self.identifier)

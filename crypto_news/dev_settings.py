@@ -5,9 +5,9 @@ DEBUG = True
 SCRAPERS['IOTA']['notifiers'] = []
 # SCRAPERS['IOTA']['scrapers'] = {}
 SCRAPERS['MODUM_IO']['notifiers'] = []
-SCRAPERS['MODUM_IO']['scrapers'] = {}
+# SCRAPERS['MODUM_IO']['scrapers'] = {}
 SCRAPERS['HACKED']['notifiers'] = []
-SCRAPERS['HACKED']['scrapers'] = {}
+# SCRAPERS['HACKED']['scrapers'] = {}
 
 # concurrent access is not possible with SQLite
 DATABASES = {

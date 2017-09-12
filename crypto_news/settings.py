@@ -194,6 +194,10 @@ NOTIFIERS = {
     'modum_io_slack': {
         'type': 'slack',
         'url': os.getenv('MODUM_SLACK_WEBHOOK_URL')
+    },
+    'date_found': {
+        'type': 'slack',
+        'url': os.getenv('DATE_FOUND_WEBHOOK_URL')
     }
 }
 

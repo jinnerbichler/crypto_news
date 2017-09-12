@@ -5,6 +5,8 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 import importlib
 
+from news_scraper.notifier import get_notifier
+
 logger = getLogger(__name__)
 
 
@@ -12,7 +14,6 @@ class Command(BaseCommand):
     help = 'Runs scrapers with configured plugins'
 
     def handle(self, *args, **options):
-
         # initialise notifier
         notifiers = init_notifiers()
 
@@ -49,16 +50,12 @@ def init_scrapers(notifiers):
 
 def init_notifiers():
     notifiers = {}
-    for notifier_id, notifier_config in settings.NOTIFIERS.items():
-        notifier_path = 'news_scraper.notifier.{}'.format(notifier_config['type'])
-        notifier_module = importlib.import_module(notifier_path)
-        notifiers[notifier_id] = notifier_module.Notifier(identifier=notifier_id,
-                                                          config=notifier_config)
+    for notifier_id in settings.NOTIFIERS:
+        notifiers[notifier_id] = get_notifier(notifier_id=notifier_id)
     return notifiers
 
 
 def schedule_scraping(scraper):
-
     def update():
         perform_scraping(scraper=scraper)
         schedule_scraping(scraper=scraper)

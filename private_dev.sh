@@ -7,6 +7,7 @@ export TWITTER_ACCESS_TOKEN_SECRET=kQrxbeNQ2UlnysHZpC2c9Z0kmRKQ7QlB1ixGPib3O5YMd
 
 export IOTA_SLACK_WEBHOOK_URL=https://hooks.slack.com/services/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
 export MODUM_SLACK_WEBHOOK_URL=https://hooks.slack.com/services/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
+export DATE_FOUND_WEBHOOK_URL=https://hooks.slack.com/services/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
 
 export POSTGRES_USER=hannes
 export POSTGRES_PASSWORD=TDyMqi

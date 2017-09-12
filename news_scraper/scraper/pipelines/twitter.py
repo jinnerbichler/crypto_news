@@ -37,7 +37,7 @@ class TwitterPipeline(object):
                                    identifier=tweet.id,
                                    linked_token=spider.linked_coin)
             try:
-                tweet_to_store.save()
+                # tweet_to_store.save()
 
                 for notifier in spider.notifiers:
                     notifier.notify(
@@ -47,12 +47,18 @@ class TwitterPipeline(object):
 
                 logger.info('Found new Tweet {}'.format(tweet_to_store))
 
-            except IntegrityError:
-                raise DropItem("Dropping tweet: %s" % item)
-        else:
-            raise DropItem("Dropping tweet: %s" % item)
+                return {'title': 'Tweet from {}'.format(tweet_to_store.creator),
+                        'text': tweet.text,
+                        'author': tweet.author.screen_name,
+                        'created_at': tweet.created_at,
+                        'url': construct_twitter_link(tweet),
+                        'source': tweet_to_store,
+                        'linked_coin': spider.linked_coin}
 
-        return tweet
+            except IntegrityError:
+                pass
+
+        raise DropItem("Dropping tweet: %s" % item)
 
 
 def construct_twitter_link(status):
