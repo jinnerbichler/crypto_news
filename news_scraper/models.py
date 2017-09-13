@@ -1,3 +1,5 @@
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
 
@@ -26,7 +28,7 @@ class NewsArticle(models.Model):
     title = models.TextField()
     author = models.TextField()
     text = models.TextField()
-    url = models.TextField()
+    url = models.URLField()
 
     # noinspection PyRedundantParentheses
     class Meta:
@@ -36,3 +38,11 @@ class NewsArticle(models.Model):
 
     def __str__(self):
         return '<NewsArticle {} from {}>'.format(self.title, self.url)
+
+
+class DetectedEvent(models.Model):
+    model_created_at = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField()
+    name = models.TextField()
+    url = models.URLField()
+    validated = models.BooleanField(default=False)

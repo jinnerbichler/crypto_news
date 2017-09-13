@@ -143,6 +143,12 @@ LOGGING = {
             'propagate': False
 
         },
+        'datefinder': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False
+
+        },
         'requests': {
             'handlers': ['console'],
             'level': 'INFO',
@@ -156,6 +162,18 @@ LOGGING = {
 
         },
         'requests_oauthlib': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False
+
+        },
+        'scrapy': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False
+
+        },
+        'tweepy': {
             'handlers': ['console'],
             'level': 'WARNING',
             'propagate': False
