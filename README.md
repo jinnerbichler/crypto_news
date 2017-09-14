@@ -1,4 +1,4 @@
-# CryptoNewsBot
+# Crypto News Bot
 
 ## Docker support
 
