@@ -216,6 +216,10 @@ NOTIFIERS = {
     'date_found': {
         'type': 'slack',
         'url': os.getenv('DATE_FOUND_WEBHOOK_URL')
+    },
+    'dev_notifier': {
+        'type': 'slack',
+        'url': os.getenv('DEV_WEBHOOK_URL')
     }
 }
 

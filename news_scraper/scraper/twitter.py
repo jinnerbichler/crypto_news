@@ -24,7 +24,7 @@ class Scraper:
         crawler_config = {
             'ITEM_PIPELINES': {
                 'news_scraper.scraper.pipelines.twitter.TwitterPipeline': 100,
-                'news_scraper.scraper.pipelines.analyse.AnalysePipeline': 800
+                'news_scraper.scraper.pipelines.analyse_date.AnalysePipeline': 800
             },
             'DOWNLOADER_MIDDLEWARES': {
                 'news_scraper.scraper.twitter.TwitterDownloaderMiddleware': 10

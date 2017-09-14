@@ -33,6 +33,7 @@ services:
       - IOTA_SLACK_WEBHOOK_URL=${IOTA_SLACK_WEBHOOK_URL}
       - MODUM_SLACK_WEBHOOK_URL=${MODUM_SLACK_WEBHOOK_URL}
       - DATE_FOUND_WEBHOOK_URL=${DATE_FOUND_WEBHOOK_URL}
+      - DEV_WEBHOOK_URL=${DEV_WEBHOOK_URL}
     restart: on-failure
     links:
       - db:cryptonews-db

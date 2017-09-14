@@ -23,7 +23,7 @@ class Scraper:
         crawler_config = {
             'ITEM_PIPELINES': {
                 'news_scraper.scraper.pipelines.news.StoreNewsPipeline': 800,
-                'news_scraper.scraper.pipelines.analyse.AnalysePipeline': 900,
+                'news_scraper.scraper.pipelines.analyse_date.AnalysePipeline': 900,
             }
         }
 
