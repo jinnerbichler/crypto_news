@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 from logging import getLogger
 
+from django.conf import settings
 from scrapy import Spider
 # noinspection PyPackageRequirements
 from bs4 import BeautifulSoup
@@ -12,7 +13,7 @@ logger = getLogger(__name__)
 
 
 class Scraper:
-    update_interval = 1  # in minutes (twice a day)
+    update_interval = settings.NEWS_UPDATE_INTERVAL
 
     def __init__(self, identifier, config, notifiers):
         self.identifier = identifier

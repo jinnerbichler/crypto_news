@@ -13,7 +13,7 @@ class StoreNewsPipeline(object):
     def process_item(self, item, spider):
         try:
             news_article = NewsArticle(**item)
-            # news_article.save()
+            news_article.save()
             logger.info('Saved {}'.format(news_article))
 
             return {'title': news_article.title,

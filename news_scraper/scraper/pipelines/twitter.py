@@ -37,7 +37,7 @@ class TwitterPipeline(object):
                                    identifier=tweet.id,
                                    linked_token=spider.linked_coin)
             try:
-                # tweet_to_store.save()
+                tweet_to_store.save()
 
                 for notifier in spider.notifiers:
                     notifier.notify(

@@ -8,9 +8,9 @@ if [ "$1" == "dev-setup" ]; then
     docker-compose up -d --build db corenlp
     docker-compose logs -f corenlp
 
-elif [ "$1" == "set-static" ]; then
+elif [ "$1" == "start-local" ]; then
 
-    # TODO set static distribution in data base
-    echo "dummy"
+    docker-compose up -d --build
+    docker-compose logs -f corenlp scraper
 
 fi

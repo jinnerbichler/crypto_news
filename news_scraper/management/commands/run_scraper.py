@@ -69,6 +69,7 @@ def schedule_scraping(scraper):
 # noinspection PyBroadException
 def perform_scraping(scraper):
     try:
+        logger.info('Start scraping {}...'.format(scraper))
         scraper.scrape()
     except:
         logger.exception('Error while scraping {}'.format(scraper))

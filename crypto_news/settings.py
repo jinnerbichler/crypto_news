@@ -143,6 +143,12 @@ LOGGING = {
             'propagate': False
 
         },
+        'crypto_news': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False
+
+        },
         'datefinder': {
             'handlers': ['console'],
             'level': 'WARNING',
@@ -157,25 +163,31 @@ LOGGING = {
         },
         'oauthlib': {
             'handlers': ['console'],
-            'level': 'WARNING',
+            'level': 'INFO',
             'propagate': False
 
         },
         'requests_oauthlib': {
             'handlers': ['console'],
-            'level': 'WARNING',
+            'level': 'INFO',
             'propagate': False
 
         },
         'scrapy': {
             'handlers': ['console'],
-            'level': 'WARNING',
+            'level': 'INFO',
             'propagate': False
 
         },
         'tweepy': {
             'handlers': ['console'],
-            'level': 'WARNING',
+            'level': 'INFO',
+            'propagate': False
+
+        },
+        'urllib3': {
+            'handlers': ['console'],
+            'level': 'INFO',
             'propagate': False
 
         }
@@ -191,8 +203,8 @@ CRAWLER_DEFAULTS = {
     'DOWNLOAD_DELAY': 0.25,
     'CONCURRENT_REQUESTS_PER_DOMAIN': 1,
     'DOWNLOADER_MIDDLEWARES': {
-        'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
-        'scrapy_fake_useragent.middleware.RandomUserAgentMiddleware': 400,
+        # 'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+        # 'scrapy_fake_useragent.middleware.RandomUserAgentMiddleware': 400,
     }
 }
 
@@ -256,6 +268,8 @@ SCRAPERS = {
 
 TWITTER_FOLLOWERS_THRESH = 500
 TWITTER_UPDATE_INTERVAL = 30  # in minutes
+
+NEWS_UPDATE_INTERVAL = 60 * 3  # in minutes (twice a day)
 
 # Twitter authentication
 TWITTER_API_KEY = os.getenv('TWITTER_API_KEY')
