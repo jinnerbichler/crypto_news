@@ -59,6 +59,7 @@ class DetectedEvent(models.Model):
     date = models.DateTimeField()
     name = models.TextField()
     url = models.URLField()
+    text_source = models.TextField(default='None')
     relevant_coins = MultiSelectField(choices=COINS, default=COINS[0])
     validated = models.BooleanField(default=False)
     is_valid = models.BooleanField(default=True)

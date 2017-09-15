@@ -30,7 +30,8 @@ class AnalysePipeline(object):
                 try:
                     event = DetectedEvent(date=make_aware(date, utc),
                                           name="Found date in {}".format(item["title"]),
-                                          url=item['url'])
+                                          url=item['url'],
+                                          text_source=source)
                     event.save()
 
                     logger.info("Found new date {} in {}".format(date, item["title"]))
