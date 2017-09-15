@@ -18,6 +18,8 @@ class AnalysePipeline(object):
     def process_item(self, item, spider):
         notifier = get_notifier(notifier_id="date_found")
 
+        # ToDo: find keywords like 'coming soon' or 'soon'
+
         text = item["text"]
         for date, source in datefinder.find_dates(text, source=True,
                                                   base_date=datetime.now()):  # ToDO: set proper base date
