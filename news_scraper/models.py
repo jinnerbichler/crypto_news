@@ -1,6 +1,20 @@
-from django.contrib.contenttypes.fields import GenericForeignKey
+from multiselectfield import MultiSelectField
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+
+COINS = (('none', 'None'),
+         ('iota', 'Iota'),
+         ('etc', 'Ethereum Classic'),
+         ('eth', 'Ethereum'),
+         ('btc', 'Bitcoin'),
+         ('dash', 'Dash'),
+         ('bth', 'Bitcoin Cash'),
+         ('xrp', 'Ripple'),
+         ('nem', 'NEM'),
+         ('xmr', 'Monero'),
+         ('omg', 'OmiseGO'),
+         ('neo', 'NEO'),
+         ('ltc', 'Litecoin'))
 
 
 class Tweet(models.Model):
@@ -45,4 +59,9 @@ class DetectedEvent(models.Model):
     date = models.DateTimeField()
     name = models.TextField()
     url = models.URLField()
+    relevant_coins = MultiSelectField(choices=COINS, default=COINS[0])
     validated = models.BooleanField(default=False)
+    is_valid = models.BooleanField(default=True)
+
+    def __str__(self):
+        return '{} on {}'.format(self.name, self.date)
