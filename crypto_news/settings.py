@@ -191,6 +191,12 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False
 
+        },
+        'prawcore': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False
+
         }
     }
 }
@@ -248,7 +254,7 @@ SCRAPERS = {
             },
             'reddit': {
                 'subreddits': ['Iota'],
-                'notifiers': ['dev_notifier']
+                'notifiers': ['iota_slack']
             }
         },
         'notifiers': ['iota_slack']
@@ -271,23 +277,22 @@ SCRAPERS = {
     }
 }
 
-TWITTER_FOLLOWERS_THRESH = 500
-
-# update intervals in minutes
-TWITTER_UPDATE_INTERVAL = 30
+# update intervals for news scraping
 NEWS_UPDATE_INTERVAL = 60 * 3
-REDDIT_UPDATE_INTERVAL = 15
 
 # Twitter authentication
 TWITTER_API_KEY = os.getenv('TWITTER_API_KEY')
 TWITTER_API_SECRET = os.getenv('TWITTER_API_SECRET')
 TWITTER_ACCESS_TOKEN = os.getenv('TWITTER_ACCESS_TOKEN')
 TWITTER_ACCESS_TOKEN_SECRET = os.getenv('TWITTER_ACCESS_TOKEN_SECRET')
+TWITTER_UPDATE_INTERVAL = 30
+TWITTER_FOLLOWERS_THRESH = 500
 
-# Reddit authentication
+# Reddit
 REDDIT_CLIENT_ID = os.getenv('REDDIT_CLIENT_ID')
 REDDIT_CLIENT_SECRET = os.getenv('REDDIT_CLIENT_SECRET')
 REDDIT_USERNAME = os.getenv('REDDIT_USERNAME')
 REDDIT_PASSWORD = os.getenv('REDDIT_PASSWORD')
-
-REDDIT_SUBMISSION_LIMIT = 5
+REDDIT_UPDATE_INTERVAL = 15
+REDDIT_SUBMISSION_LIMIT = 20
+REDDIT_HOT_THRESHHOLD = 20

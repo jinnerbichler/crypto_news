@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 
+from django.conf import settings
 from django.db import IntegrityError
 from django.utils.timezone import make_aware, utc
 from scrapy.exceptions import DropItem
@@ -125,4 +126,4 @@ def update_comments(authors, comments, submission, notifiers):
 
 
 def is_hot_submission(submission):
-    return submission.num_comments > 15
+    return submission.num_comments > settings.REDDIT_HOT_THRESHHOLD
