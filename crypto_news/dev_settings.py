@@ -2,12 +2,13 @@ from crypto_news.settings import *
 
 DEBUG = True
 
-SCRAPERS['IOTA']['notifiers'] = []
-# SCRAPERS['IOTA']['scrapers'] = {}
+# SCRAPERS['IOTA']['notifiers'] = []
 SCRAPERS['MODUM_IO']['notifiers'] = []
-# SCRAPERS['MODUM_IO']['scrapers'] = {}
 SCRAPERS['HACKED']['notifiers'] = []
-# SCRAPERS['HACKED']['scrapers'] = {}
+del SCRAPERS['IOTA']['scrapers']['twitter']
+# SCRAPERS['IOTA']['scrapers'] = {}
+SCRAPERS['MODUM_IO']['scrapers'] = {}
+SCRAPERS['HACKED']['scrapers'] = {}
 
 del NOTIFIERS['date_found']
 

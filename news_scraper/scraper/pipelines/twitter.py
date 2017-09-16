@@ -7,6 +7,7 @@ from django.utils.timezone import make_aware, utc
 from scrapy.exceptions import DropItem
 
 from news_scraper.models import Tweet
+from news_scraper.notifier import notify_all
 
 logger = logging.getLogger(__name__)
 
@@ -39,13 +40,13 @@ class TwitterPipeline(object):
             try:
                 tweet_to_store.save()
 
-                for notifier in spider.notifiers:
-                    notifier.notify(
-                        title='New Tweet from {}'.format(tweet.author.screen_name),
-                        message=tweet.text,
-                        url=construct_twitter_link(tweet))
-
                 logger.info('Found new Tweet {}'.format(tweet_to_store))
+
+                # trigger notifications
+                notify_all(notifiers=spider.notifiers,
+                           title='New Tweet from {}'.format(tweet.author.screen_name),
+                           message=tweet.text,
+                           url=construct_twitter_link(tweet))
 
                 return {'title': 'Tweet from {}'.format(tweet_to_store.creator),
                         'text': tweet.text,

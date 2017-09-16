@@ -56,20 +56,42 @@ class NewsArticle(models.Model):
 
 class RedditSubmission(models.Model):
     model_created_at = models.DateTimeField(auto_now_add=True)
+    identifier = models.TextField()
     title = models.TextField()
-    created_at = models.DateTimeField()
+    self_text = models.TextField()
+    self_text_html = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField()  # utc
     author = models.TextField()
+    url = models.URLField()
+    is_video = models.BooleanField(default=False)
     up_votes = models.IntegerField(default=0)
     down_votes = models.IntegerField(default=0)
-    url = models.URLField()
+    num_comments = models.IntegerField()
+    is_hot = models.BooleanField(default=False)
+
+    # noinspection PyRedundantParentheses
+    class Meta:
+        unique_together = (('identifier',))
+        verbose_name = 'Reddit Submission'
+        verbose_name_plural = 'Reddit Submissions'
 
 
 class RedditComment(models.Model):
     model_created_at = models.DateTimeField(auto_now_add=True)
-    created_at = models.DateTimeField()
+    identifier = models.TextField()
+    created_at = models.DateTimeField()  # utc
     author = models.TextField()
     body = models.TextField()
+    body_html = models.TextField()
+    up_votes = models.IntegerField(default=0)
+    down_votes = models.IntegerField(default=0)
     parent_submission = models.ForeignKey(RedditSubmission, on_delete=models.CASCADE)
+
+    # noinspection PyRedundantParentheses
+    class Meta:
+        unique_together = (('identifier',))
+        verbose_name = 'Reddit Comment'
+        verbose_name_plural = 'Reddit Comments'
 
 
 class DetectedEvent(models.Model):

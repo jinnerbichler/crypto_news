@@ -13,3 +13,8 @@ def get_notifier(notifier_id):
     notifier_path = 'news_scraper.notifier.{}'.format(notifier_config['type'])
     notifier_module = importlib.import_module(notifier_path)
     return notifier_module.Notifier(identifier=notifier_id, config=notifier_config)
+
+
+def notify_all(notifiers, title, message, url):
+    for notifier in notifiers:
+        notifier.notify(title=title, message=message, url=url)

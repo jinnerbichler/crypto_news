@@ -30,20 +30,24 @@ def init_scrapers(notifiers):
     scrapers = []
     for identifier, token_config in settings.SCRAPERS.items():
 
-        scraper_notifiers = [notifiers[n] for n in token_config['notifiers']]
-        for scraper_type, scraper_config in token_config['scrapers'].items():
-            if scraper_type != 'notifier':
-                # loading module of scraper
-                scraper_module_path = 'news_scraper.scraper.{}'.format(scraper_type)
-                logger.info('Loading scraper {}'.format(scraper_module_path))
-                scraper_module = importlib.import_module(scraper_module_path)
+        top_level_notifiers = [notifiers[n] for n in token_config['notifiers']]
+        for scraper_type, scraper_conf in token_config['scrapers'].items():
 
-                # instantiate scraper
-                scraper = scraper_module.Scraper(identifier=identifier,
-                                                 config=scraper_config,
-                                                 notifiers=scraper_notifiers)
+            # obtain notifiers for scraper (with eliminating duplicates)
+            scraper_notifiers = [notifiers[n] for n in scraper_conf.get('notifiers', [])]
+            scraper_notifiers = list(set(scraper_notifiers + top_level_notifiers))
 
-                scrapers.append(scraper)
+            # loading module of scraper
+            scraper_module_path = 'news_scraper.scraper.{}'.format(scraper_type)
+            logger.info('Loading scraper {}'.format(scraper_module_path))
+            scraper_module = importlib.import_module(scraper_module_path)
+
+            # instantiate scraper
+            scraper = scraper_module.Scraper(identifier=identifier,
+                                             config=scraper_conf,
+                                             notifiers=scraper_notifiers)
+
+            scrapers.append(scraper)
 
     return scrapers
 

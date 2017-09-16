@@ -1,50 +1,134 @@
+import time
+from logging import getLogger
+
+import collections
+import scrapy
 from django.conf import settings
 from praw import Reddit
-from datetime import datetime
+from scrapy import Request
+from scrapy.http import Response
+
+from news_scraper.scraper import ScraperBase
+
+logger = getLogger(__name__)
 
 
-class Scraper:
+class Scraper(ScraperBase):
     update_interval = settings.REDDIT_UPDATE_INTERVAL
 
     def __init__(self, identifier, config, notifiers):
-        self.config = config
-        self.identifier = identifier
-        self.notifiers = notifiers
-
-        logger.info('{} initialised'.format(self))
-
-    def scrape(self):
-        crawler_config = {
+        spiders_config = {
             'ITEM_PIPELINES': {
-                'news_scraper.scraper.pipelines.twitter.TwitterPipeline': 100,
-                'news_scraper.scraper.pipelines.analyse_date.AnalysePipeline': 800
+                'news_scraper.scraper.pipelines.reddit.RedditPipeline': 100,
+                # 'news_scraper.scraper.pipelines.analyse_date.AnalysePipeline': 800
             },
             'DOWNLOADER_MIDDLEWARES': {
-                'news_scraper.scraper.twitter.TwitterDownloaderMiddleware': 10
+                'news_scraper.scraper.reddit.RedditDownloaderMiddleware': 10
             }
         }
+        spiders = [(RedditSpider, {'linked_coin': identifier,
+                                   'config': config,
+                                   'notifiers': notifiers})]
 
-        start_scraping(spider_config=crawler_config,
-                       spiders=[(TwitterSpider, {'linked_coin': self.identifier,
-                                                 'config': self.config,
-                                                 'notifiers': self.notifiers})])
+        super(Scraper, self).__init__(identifier=identifier, config=config,
+                                      notifiers=notifiers, spiders=spiders,
+                                      spiders_config=spiders_config)
 
     def __str__(self):
-        return "<TwitterScraper {}>".format(self.identifier)
+        return "<RedditScraper {}>".format(self.identifier)
 
 
-if __name__ == '__main__':
-    reddit = Reddit(client_id='Rm_w3TCY3erL3w',
-                    client_secret='yJxgYH8AeyheshZLw0YhLHKwi9U',
-                    username='jinnerbichler',
-                    password='Hannes1987',
-                    user_agent='testscript by /u/jinnerbichler')
+class RedditSpider(scrapy.Spider):
+    name = 'reddit-submissions'
+    allowed_domains = ['reddit.com']
 
-    subreddit = reddit.subreddit('iota').hot(limit=30)
-    for submission in subreddit:
-        submission.comment_sort = 'new'
-        submission.comments.replace_more(limit=0)
-        print('Submission: {}'.format(submission.title))
-        creation_time = datetime.utcfromtimestamp(submission.created_utc)
-        for comment in submission.comments.list():
-            print('  Comment: {}'.format(comment.body))
+    # noinspection PyUnresolvedReferences
+    def __init__(self, linked_coin=None, config=None, notifiers=None, *args, **kwargs):
+        if not linked_coin or not config or notifiers is None:
+            raise scrapy.exceptions.CloseSpider('Invalid arguments...')
+        super(RedditSpider, self).__init__(*args, **kwargs)
+
+        self.linked_coin = linked_coin
+        self.notifiers = notifiers
+        self.subreddits = config['subreddits']
+
+    def start_requests(self):
+        return [SubredditRequest(subreddit=sr) for sr in self.subreddits]
+
+    def parse(self, response):
+        for submission in response.submissions:
+            yield {'submission': submission,
+                   'authors': response.authors}
+
+
+# noinspection PyUnusedLocal
+class SubredditRequest(Request):
+    def __init__(self, *args, **kwargs):
+        self.subreddit = kwargs.pop('subreddit', None)
+        super(SubredditRequest, self).__init__(
+            'https://www.reddit.com/r/{}'.format(self.subreddit),
+            dont_filter=True, **kwargs)
+
+
+# noinspection PyUnusedLocal
+class SubredditResponse(Response):
+    def __init__(self, *args, **kwargs):
+        self.subreddit = kwargs.pop('subreddit', None)
+        self.submissions = kwargs.pop('submissions', None)
+        self.authors = kwargs.pop('authors', None)
+        super(SubredditResponse, self).__init__(
+            'https://www.reddit.com/r/{}'.format(self.subreddit), *args, **kwargs)
+
+
+Submission = collections.namedtuple('Submission', 'submission comments')
+
+
+class RedditDownloaderMiddleware(object):
+    def __init__(self, client_id, client_secret, username, password, count):
+        # setup api with authentication
+        self.api = Reddit(client_id=client_id,
+                          client_secret=client_secret,
+                          username=username,
+                          password=password,
+                          user_agent='testscript by /u/jinnerbichler')
+        self.count = count
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        client_id = settings.REDDIT_CLIENT_ID
+        client_secret = settings.REDDIT_CLIENT_SECRET
+        username = settings.REDDIT_USERNAME
+        password = settings.REDDIT_PASSWORD
+        count = settings.REDDIT_SUBMISSION_LIMIT
+        return cls(client_id, client_secret, username, password, count)
+
+    def process_request(self, request, spider):
+
+        fetched_submissions = []
+        authors = {}
+
+        if isinstance(request, SubredditRequest):
+
+            # fetch submissions
+            subreddit = self.api.subreddit(request.subreddit).hot(limit=self.count)
+            for submission in subreddit:
+
+                new_submission = Submission(submission=submission, comments=[])
+
+                # pre-fetch comments
+                submission.comment_sort = 'new'
+                submission.comments.replace_more(limit=0)
+                for comment in submission.comments.list():
+                    authors[comment.id] = comment.author
+                    new_submission.comments.append(comment)
+
+                fetched_submissions.append(new_submission)
+
+                time.sleep(0.1)
+
+            return SubredditResponse(subreddit=request.subreddit,
+                                     submissions=fetched_submissions,
+                                     authors=authors)
+
+    def process_response(self, request, response, spider):
+        return response

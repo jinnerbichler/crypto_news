@@ -9,3 +9,9 @@ class Notifier:
     def notify(self, title, message, url):
         attachments = [{'title': title, 'title_link': url, 'text': message}]
         self.slack.notify(attachments=attachments)
+
+    def __str__(self):
+        return '<SlackNotifier {}>'.format(self.identifier)
+
+    def __repr__(self):
+        return self.__str__()

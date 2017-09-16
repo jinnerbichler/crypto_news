@@ -176,7 +176,7 @@ LOGGING = {
         },
         'scrapy': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': 'DEBUG',
             'propagate': False
 
         },
@@ -246,8 +246,9 @@ SCRAPERS = {
                 'exclude_users': ['@coinstats', '@analysisinchain',
                                   '@iota_market', '@dx_alert']
             },
-            'reddit':  {
-                'subreddits': ['Iota']
+            'reddit': {
+                'subreddits': ['Iota'],
+                'notifiers': ['dev_notifier']
             }
         },
         'notifiers': ['iota_slack']
@@ -282,3 +283,11 @@ TWITTER_API_KEY = os.getenv('TWITTER_API_KEY')
 TWITTER_API_SECRET = os.getenv('TWITTER_API_SECRET')
 TWITTER_ACCESS_TOKEN = os.getenv('TWITTER_ACCESS_TOKEN')
 TWITTER_ACCESS_TOKEN_SECRET = os.getenv('TWITTER_ACCESS_TOKEN_SECRET')
+
+# Reddit authentication
+REDDIT_CLIENT_ID = os.getenv('REDDIT_CLIENT_ID')
+REDDIT_CLIENT_SECRET = os.getenv('REDDIT_CLIENT_SECRET')
+REDDIT_USERNAME = os.getenv('REDDIT_USERNAME')
+REDDIT_PASSWORD = os.getenv('REDDIT_PASSWORD')
+
+REDDIT_SUBMISSION_LIMIT = 5

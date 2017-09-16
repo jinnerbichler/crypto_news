@@ -7,29 +7,24 @@ from scrapy import Spider
 # noinspection PyPackageRequirements
 from bs4 import BeautifulSoup
 
-from news_scraper.scraper import start_scraping
+from news_scraper.scraper import ScraperBase
 
 logger = getLogger(__name__)
 
 
-class Scraper:
+class Scraper(ScraperBase):
     update_interval = settings.NEWS_UPDATE_INTERVAL
 
-    def __init__(self, identifier, config, notifiers):
-        self.identifier = identifier
-        self.config = config
-        self.notifiers = notifiers
-
-    def scrape(self):
-        crawler_config = {
+    def __init__(self, **kwargs):
+        spiders_config = {
             'ITEM_PIPELINES': {
                 'news_scraper.scraper.pipelines.news.StoreNewsPipeline': 800,
                 'news_scraper.scraper.pipelines.analyse_date.AnalysePipeline': 900,
             }
         }
-
-        start_scraping(spider_config=crawler_config,
-                       spiders=[(HackedSpider, {})])
+        spiders = [(HackedSpider, {})]
+        super(Scraper, self).__init__(**kwargs, spiders=spiders,
+                                      spiders_config=spiders_config)
 
     def __str__(self):
         return "<HackedComScraper {}>".format(self.identifier)

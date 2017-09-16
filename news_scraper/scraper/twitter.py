@@ -1,27 +1,22 @@
 from __future__ import unicode_literals
+
 from logging import getLogger
+
 import scrapy
-from scrapy.http import Request, Response
 import tweepy
 from django.conf import settings
+from scrapy.http import Request, Response
 
-from news_scraper.scraper import start_scraping
+from news_scraper.scraper import ScraperBase
 
 logger = getLogger(__name__)
 
 
-class Scraper:
+class Scraper(ScraperBase):
     update_interval = settings.TWITTER_UPDATE_INTERVAL
 
     def __init__(self, identifier, config, notifiers):
-        self.config = config
-        self.identifier = identifier
-        self.notifiers = notifiers
-
-        logger.info('{} initialised'.format(self))
-
-    def scrape(self):
-        crawler_config = {
+        spiders_config = {
             'ITEM_PIPELINES': {
                 'news_scraper.scraper.pipelines.twitter.TwitterPipeline': 100,
                 'news_scraper.scraper.pipelines.analyse_date.AnalysePipeline': 800
@@ -30,11 +25,13 @@ class Scraper:
                 'news_scraper.scraper.twitter.TwitterDownloaderMiddleware': 10
             }
         }
+        spiders = [(TwitterSpider, {'linked_coin': identifier,
+                                    'config': config,
+                                    'notifiers': notifiers})]
 
-        start_scraping(spider_config=crawler_config,
-                       spiders=[(TwitterSpider, {'linked_coin': self.identifier,
-                                                 'config': self.config,
-                                                 'notifiers': self.notifiers})])
+        super(Scraper, self).__init__(identifier=identifier, config=config,
+                                      notifiers=notifiers, spiders=spiders,
+                                      spiders_config=spiders_config)
 
     def __str__(self):
         return "<TwitterScraper {}>".format(self.identifier)
@@ -44,8 +41,8 @@ class TwitterSpider(scrapy.Spider):
     name = "twitter-user-timeline"
     allowed_domains = ["twitter.com"]
 
-    def __init__(self, linked_coin=None, config=None, notifiers=None, *args,
-                 **kwargs):
+    # noinspection PyUnresolvedReferences
+    def __init__(self, linked_coin=None, config=None, notifiers=None, *args, **kwargs):
         if not linked_coin or not config or notifiers is None:
             raise scrapy.exceptions.CloseSpider('Invalid arguments...')
         super(TwitterSpider, self).__init__(*args, **kwargs)
@@ -61,7 +58,7 @@ class TwitterSpider(scrapy.Spider):
         requests = [TwitterUserTimelineRequest(screen_name=sn, count=self.count)
                     for sn in self.users]
         requests += [TwitterHashtagRequest(hashtag=ht, count=self.count)
-                    for ht in self.hashtags]
+                     for ht in self.hashtags]
         return requests
 
     def parse(self, response):
