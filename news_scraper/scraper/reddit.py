@@ -1,5 +1,37 @@
+from django.conf import settings
 from praw import Reddit
 from datetime import datetime
+
+
+class Scraper:
+    update_interval = settings.REDDIT_UPDATE_INTERVAL
+
+    def __init__(self, identifier, config, notifiers):
+        self.config = config
+        self.identifier = identifier
+        self.notifiers = notifiers
+
+        logger.info('{} initialised'.format(self))
+
+    def scrape(self):
+        crawler_config = {
+            'ITEM_PIPELINES': {
+                'news_scraper.scraper.pipelines.twitter.TwitterPipeline': 100,
+                'news_scraper.scraper.pipelines.analyse_date.AnalysePipeline': 800
+            },
+            'DOWNLOADER_MIDDLEWARES': {
+                'news_scraper.scraper.twitter.TwitterDownloaderMiddleware': 10
+            }
+        }
+
+        start_scraping(spider_config=crawler_config,
+                       spiders=[(TwitterSpider, {'linked_coin': self.identifier,
+                                                 'config': self.config,
+                                                 'notifiers': self.notifiers})])
+
+    def __str__(self):
+        return "<TwitterScraper {}>".format(self.identifier)
+
 
 if __name__ == '__main__':
     reddit = Reddit(client_id='Rm_w3TCY3erL3w',

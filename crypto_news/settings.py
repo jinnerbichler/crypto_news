@@ -244,6 +244,9 @@ SCRAPERS = {
                 'hashtags': ['#iotatoken', '#iota'],
                 'exclude_users': ['@coinstats', '@analysisinchain',
                                   '@iota_market', '@dx_alert']
+            },
+            'reddit':  {
+                'subreddits': ['Iota']
             }
         },
         'notifiers': ['iota_slack']
@@ -267,9 +270,11 @@ SCRAPERS = {
 }
 
 TWITTER_FOLLOWERS_THRESH = 500
-TWITTER_UPDATE_INTERVAL = 30  # in minutes
 
-NEWS_UPDATE_INTERVAL = 60 * 3  # in minutes (twice a day)
+# update intervals in minutes
+TWITTER_UPDATE_INTERVAL = 30
+NEWS_UPDATE_INTERVAL = 60 * 3
+REDDIT_UPDATE_INTERVAL = 15
 
 # Twitter authentication
 TWITTER_API_KEY = os.getenv('TWITTER_API_KEY')
