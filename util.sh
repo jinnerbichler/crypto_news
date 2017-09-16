@@ -13,4 +13,8 @@ elif [ "$1" == "start-local" ]; then
     docker-compose up -d --build
     docker-compose logs -f corenlp scraper
 
+elif [ "$1" == "stop-local" ]; then
+
+    docker-compose stop
+
 fi
