@@ -8,3 +8,4 @@ psycopg2
 datefinder==0.6.1
 scrapy-fake-useragent==1.1.0
 stanford-corenlp==3.7.1
+praw==5.1.0

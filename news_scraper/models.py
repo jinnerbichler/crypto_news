@@ -40,6 +40,24 @@ class NewsArticle(models.Model):
         return '<NewsArticle {} from {}>'.format(self.title, self.url)
 
 
+class RedditSubmission(models.Model):
+    model_created_at = models.DateTimeField(auto_now_add=True)
+    title = models.TextField()
+    created_at = models.DateTimeField()
+    author = models.TextField()
+    up_votes = models.IntegerField(default=0)
+    down_votes = models.IntegerField(default=0)
+    url = models.URLField()
+
+
+class RedditComment(models.Model):
+    model_created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField()
+    author = models.TextField()
+    body = models.TextField()
+    parent_submission = models.ForeignKey(RedditSubmission, on_delete=models.CASCADE)
+
+
 class DetectedEvent(models.Model):
     model_created_at = models.DateTimeField(auto_now_add=True)
     date = models.DateTimeField()
