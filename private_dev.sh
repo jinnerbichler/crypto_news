@@ -19,5 +19,5 @@ export DEV_WEBHOOK_URL=https://hooks.slack.com/services/T740N98K1/B728BD524/IPzA
 export POSTGRES_USER=hannes
 export POSTGRES_PASSWORD=TDyMqi
 
-export DJANGO_SETTINGS_MODULE=crypto_news.docker_settings
+export DJANGO_SETTINGS_MODULE=crypto_news.dev_settings
 

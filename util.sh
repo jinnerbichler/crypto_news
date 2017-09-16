@@ -10,11 +10,13 @@ if [ "$1" == "dev-setup" ]; then
 
 elif [ "$1" == "start-local" ]; then
 
+    eval $(docker-machine env -u)
     docker-compose up -d --build
     docker-compose logs -f corenlp scraper
 
 elif [ "$1" == "stop-local" ]; then
 
+    eval $(docker-machine env -u)
     docker-compose stop
 
 fi

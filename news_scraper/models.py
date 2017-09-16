@@ -58,8 +58,8 @@ class RedditSubmission(models.Model):
     model_created_at = models.DateTimeField(auto_now_add=True)
     identifier = models.TextField()
     title = models.TextField()
-    self_text = models.TextField()
-    self_text_html = models.TextField(null=True, blank=True)
+    self_text = models.TextField(max_length=1024*4)
+    self_text_html = models.TextField(max_length=1024*4, null=True, blank=True)
     created_at = models.DateTimeField()  # utc
     author = models.TextField()
     url = models.URLField()
@@ -81,8 +81,8 @@ class RedditComment(models.Model):
     identifier = models.TextField()
     created_at = models.DateTimeField()  # utc
     author = models.TextField()
-    body = models.TextField()
-    body_html = models.TextField()
+    body = models.TextField(max_length=1024*4)
+    body_html = models.TextField(max_length=1024*4)
     up_votes = models.IntegerField(default=0)
     down_votes = models.IntegerField(default=0)
     parent_submission = models.ForeignKey(RedditSubmission, on_delete=models.CASCADE)
