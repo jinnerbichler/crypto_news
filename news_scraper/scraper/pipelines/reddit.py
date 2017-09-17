@@ -19,7 +19,8 @@ class RedditPipeline(object):
     def process_item(self, item, spider):
         # update or create submission
         submission = update_submission(submission_item=item['submission'].submission,
-                                       notifiers=spider.notifiers)
+                                       notifiers=spider.notifiers,
+                                       linked_coin=spider.linked_coin)
 
         # create or update comments
         result_text = [submission.title]
@@ -43,7 +44,7 @@ class RedditPipeline(object):
                 'linked_coin': spider.linked_coin}
 
 
-def update_submission(submission_item, notifiers):
+def update_submission(submission_item, notifiers, linked_coin):
     try:
         created_at = datetime.utcfromtimestamp(submission_item.created_utc)
         submission = RedditSubmission(identifier=submission_item.id,
@@ -68,20 +69,24 @@ def update_submission(submission_item, notifiers):
             submission.up_votes = submission_item.ups
             submission.down_votes = submission_item.downs
             submission.num_comments = submission_item.num_comments
-
-            # check if submission became hot  # ToDo: check creation time
-            is_hot = is_hot_submission(submission)
-            if is_hot and not submission.is_hot:  # check change
-                notify_all(notifiers=notifiers,
-                           title='Hot Reddit Submission detected',
-                           message=submission.title,
-                           url=submission.url)
-                logger.info('Found new hot submission: {}'.format(submission.identifier))
-
-            submission.is_hot = is_hot
             submission.save()
+
         else:
             logger.error('Cannot find submission: {}'.format(submission_item.id))
+
+    # check if submission became hot  # ToDo: check creation time
+    is_hot = is_hot_submission(submission)
+    if is_hot and not submission.is_hot:  # check change
+        notify_all(notifiers=notifiers,
+                   title='Hot Reddit Submission detected for {}'.format(linked_coin),
+                   message=submission.title,
+                   url=submission.url)
+        logger.info('Found new hot submission: {}'.format(submission.identifier))
+
+        # store hotness :)
+        submission.is_hot = is_hot
+        submission.save()
+
     return submission
 
 
