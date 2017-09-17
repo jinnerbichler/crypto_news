@@ -14,13 +14,11 @@ logger = getLogger(__name__)
 
 
 class Scraper(ScraperBase):
-    update_interval = settings.REDDIT_UPDATE_INTERVAL
-
     def __init__(self, identifier, config, notifiers):
         spiders_config = {
             'ITEM_PIPELINES': {
                 'news_scraper.scraper.pipelines.reddit.RedditPipeline': 100,
-                # 'news_scraper.scraper.pipelines.analyse_date.AnalysePipeline': 800
+                'news_scraper.scraper.pipelines.analyse_date.AnalysePipeline': 800
             },
             'DOWNLOADER_MIDDLEWARES': {
                 'news_scraper.scraper.reddit.RedditDownloaderMiddleware': 10
@@ -32,7 +30,8 @@ class Scraper(ScraperBase):
 
         super(Scraper, self).__init__(identifier=identifier, config=config,
                                       notifiers=notifiers, spiders=spiders,
-                                      spiders_config=spiders_config)
+                                      spiders_config=spiders_config,
+                                      default_interval=settings.REDDIT_UPDATE_INTERVAL)
 
     def __str__(self):
         return "<RedditScraper {}>".format(self.identifier)
@@ -83,6 +82,7 @@ class SubredditResponse(Response):
 Submission = collections.namedtuple('Submission', 'submission comments')
 
 
+# noinspection PyUnusedLocal
 class RedditDownloaderMiddleware(object):
     def __init__(self, client_id, client_secret, username, password, count):
         # setup api with authentication
@@ -130,5 +130,6 @@ class RedditDownloaderMiddleware(object):
                                      submissions=fetched_submissions,
                                      authors=authors)
 
+    # noinspection PyMethodMayBeStatic
     def process_response(self, request, response, spider):
         return response

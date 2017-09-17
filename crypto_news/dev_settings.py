@@ -2,13 +2,18 @@ from crypto_news.settings import *
 
 DEBUG = True
 
-# SCRAPERS['IOTA']['notifiers'] = []
-# SCRAPERS['MODUM_IO']['notifiers'] = []
-# SCRAPERS['HACKED']['notifiers'] = []
-# del SCRAPERS['IOTA']['scrapers']['twitter']
-# SCRAPERS['IOTA']['scrapers'] = {}
-# SCRAPERS['MODUM_IO']['scrapers'] = {}
-# SCRAPERS['HACKED']['scrapers'] = {}
+SCRAPERS = {
+    'IOTA': {
+        'scrapers': {
+            'reddit': {
+                'subreddits': ['Iota'],
+                'notifiers': ['important_news'],
+                'update_interval': 30
+            }
+        },
+        'notifiers': []
+    }
+}
 
 # set all slack notifies to dev channel
 for notifier in [n for n in NOTIFIERS.values() if n['type'] == 'slack']:

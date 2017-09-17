@@ -33,10 +33,12 @@ def notify_scrape_error(url, item):
 
 
 class ScraperBase:
-    def __init__(self, identifier, config, notifiers, spiders, spiders_config):
+    def __init__(self, identifier, config, notifiers, spiders,
+                 spiders_config, default_interval):
         self.identifier = identifier
         self.config = config
         self.notifiers = notifiers
+        self.update_interval = config.get('update_interval', default_interval)
 
         self.spiders = spiders
         self.spiders_config = spiders_config

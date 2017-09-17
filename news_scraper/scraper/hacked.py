@@ -7,7 +7,6 @@ from scrapy import Spider
 # noinspection PyPackageRequirements
 from bs4 import BeautifulSoup
 
-from news_scraper.notifier import get_notifier
 from news_scraper.scraper import ScraperBase, notify_scrape_error
 
 logger = getLogger(__name__)
@@ -24,8 +23,10 @@ class Scraper(ScraperBase):
             }
         }
         spiders = [(HackedSpider, {})]
-        super(Scraper, self).__init__(**kwargs, spiders=spiders,
-                                      spiders_config=spiders_config)
+        super(Scraper, self).__init__(**kwargs,
+                                      spiders=spiders,
+                                      spiders_config=spiders_config,
+                                      default_interval=settings.NEWS_UPDATE_INTERVAL)
 
     def __str__(self):
         return "<HackedComScraper {}>".format(self.identifier)

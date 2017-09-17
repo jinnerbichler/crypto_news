@@ -18,22 +18,29 @@ class RedditPipeline(object):
 
     def process_item(self, item, spider):
         # update or create submission
-        submission = update_submission(submission_item=item['submission'].submission,
-                                       notifiers=spider.notifiers,
-                                       linked_coin=spider.linked_coin)
+        submission_item = item['submission'].submission
+        submission, is_new = update_submission(submission_item=submission_item,
+                                               notifiers=spider.notifiers,
+                                               linked_coin=spider.linked_coin)
 
         # create or update comments
-        result_text = [submission.title]
-        result_text += update_comments(authors=item['authors'],
+        new_comments = update_comments(authors=item['authors'],
                                        comments=item['submission'].comments,
                                        submission=submission,
                                        notifiers=spider.notifiers)
 
-        if len(result_text) == 1:  # only submission title (no comments yet)
+        # create resulting text
+        result_text = [submission.title] if is_new else []
+        result_text += [c.body for c in new_comments]
+
+        # check if new entries
+        if len(result_text) == 0:
             raise DropItem('Dropping submission: %s' % item)
 
-        logger.info('Updated submission: {} with {} new comments'.format(
-            submission.identifier, len(result_text) - 1))
+        logger.info('{} submission: {} with {} new comments'.format(
+            'Created' if is_new else 'Updated',
+            submission.identifier,
+            len(result_text) - 1))
 
         return {'title': 'Reddit Submission {}'.format(submission.title),
                 'text': '\n'.join(result_text),
@@ -45,6 +52,7 @@ class RedditPipeline(object):
 
 
 def update_submission(submission_item, notifiers, linked_coin):
+    is_new = False
     try:
         created_at = datetime.utcfromtimestamp(submission_item.created_utc)
         submission = RedditSubmission(identifier=submission_item.id,
@@ -53,13 +61,15 @@ def update_submission(submission_item, notifiers, linked_coin):
                                       self_text_html=submission_item.selftext_html,
                                       created_at=make_aware(created_at, utc),
                                       author=submission_item.author.name,
-                                      url=submission_item.url,
+                                      url=submission_item.shortlink,
                                       is_video=submission_item.is_video,
                                       up_votes=submission_item.ups,
                                       down_votes=submission_item.downs,
                                       num_comments=submission_item.num_comments)
         submission.save()
+        is_new = True
         logger.debug('Created submission: {}'.format(submission.identifier))
+
     except IntegrityError:  # already exists -> update item
         submission = RedditSubmission.objects.filter(identifier=submission_item.id)
         submission = submission.first()
@@ -70,7 +80,6 @@ def update_submission(submission_item, notifiers, linked_coin):
             submission.down_votes = submission_item.downs
             submission.num_comments = submission_item.num_comments
             submission.save()
-
         else:
             logger.error('Cannot find submission: {}'.format(submission_item.id))
 
@@ -87,12 +96,12 @@ def update_submission(submission_item, notifiers, linked_coin):
         submission.is_hot = is_hot
         submission.save()
 
-    return submission
+    return submission, is_new
 
 
 # noinspection PyUnusedLocal
 def update_comments(authors, comments, submission, notifiers):
-    result_text = []
+    new_comments = []
     for comment_item in comments:
         try:
 
@@ -111,7 +120,7 @@ def update_comments(authors, comments, submission, notifiers):
             comment.save()
 
             # only new comments should be forwarded
-            result_text.append(comment.body)
+            new_comments.append(comment)
 
         except IntegrityError:  # already exists -> update item
             comment = RedditComment.objects.filter(identifier=comment_item.id).first()
@@ -124,7 +133,7 @@ def update_comments(authors, comments, submission, notifiers):
             else:
                 logger.error('Can not find comment: {}'.format(comment_item.id))
 
-    return result_text
+    return new_comments
 
 
 def is_hot_submission(submission):

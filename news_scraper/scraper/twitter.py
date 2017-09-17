@@ -13,8 +13,6 @@ logger = getLogger(__name__)
 
 
 class Scraper(ScraperBase):
-    update_interval = settings.TWITTER_UPDATE_INTERVAL
-
     def __init__(self, identifier, config, notifiers):
         spiders_config = {
             'ITEM_PIPELINES': {
@@ -29,9 +27,12 @@ class Scraper(ScraperBase):
                                     'config': config,
                                     'notifiers': notifiers})]
 
-        super(Scraper, self).__init__(identifier=identifier, config=config,
-                                      notifiers=notifiers, spiders=spiders,
-                                      spiders_config=spiders_config)
+        super(Scraper, self).__init__(identifier=identifier,
+                                      config=config,
+                                      notifiers=notifiers,
+                                      spiders=spiders,
+                                      spiders_config=spiders_config,
+                                      default_interval=settings.TWITTER_UPDATE_INTERVAL)
 
     def __str__(self):
         return "<TwitterScraper {}>".format(self.identifier)

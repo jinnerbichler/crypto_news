@@ -217,13 +217,17 @@ NOTIFIERS = {
         'type': 'slack',
         'channel': '#iota_news'
     },
-    'modum_io_slack': {
+    'misc_news_slack': {
         'type': 'slack',
-        'channel': '#modum_news'
+        'channel': '#misc_news'
     },
     'date_found': {
         'type': 'slack',
         'channel': '#random'
+    },
+    'neo_slack': {
+        'type': 'slack',
+        'channel': '#neo_news'
     },
     'dev_notifier': {
         'type': 'slack',
@@ -247,7 +251,8 @@ SCRAPERS = {
             },
             'reddit': {
                 'subreddits': ['Iota'],
-                'notifiers': ['important_news']
+                'notifiers': ['important_news'],
+                'update_interval': 30
             }
         },
         'notifiers': ['iota_slack']
@@ -260,7 +265,21 @@ SCRAPERS = {
                 'exclude_users': []
             }
         },
-        'notifiers': ['modum_io_slack']
+        'notifiers': ['misc_news_slack']
+    },
+    'NEO': {
+        'scrapers': {
+            'twitter': {
+                'users': ['@NEO_Blockchain', '@NEOnewstoday'],
+                'hashtags': [],
+                'exclude_users': []
+            },
+            'reddit': {
+                'subreddits': ['NEO'],
+                'notifiers': ['important_news'],
+            }
+        },
+        'notifiers': ['neo_slack']
     },
     'HACKED': {
         'scrapers': {
@@ -291,4 +310,4 @@ REDDIT_USERNAME = os.getenv('REDDIT_USERNAME')
 REDDIT_PASSWORD = os.getenv('REDDIT_PASSWORD')
 REDDIT_UPDATE_INTERVAL = 15
 REDDIT_SUBMISSION_LIMIT = 20
-REDDIT_HOT_THRESHHOLD = 20
+REDDIT_HOT_THRESHHOLD = 25
