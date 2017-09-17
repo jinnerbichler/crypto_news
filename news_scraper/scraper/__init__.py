@@ -3,6 +3,8 @@ from multiprocessing import Process
 from django.conf import settings
 from scrapy.crawler import CrawlerProcess
 
+from news_scraper.notifier import get_notifier
+
 logger = getLogger(__name__)
 
 
@@ -20,6 +22,14 @@ def start_scraping(spider_config, spiders):
     p = Process(target=start_crawling)
     p.start()
     p.join()
+
+
+def notify_scrape_error(url, item):
+    error_notifier = get_notifier(notifier_id='dev_notifier')
+    if error_notifier:
+        error_notifier.notify(title='Error while scraping: {}'.format(url),
+                              message='Item {}'.format(item),
+                              url=url)
 
 
 class ScraperBase:

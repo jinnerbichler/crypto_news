@@ -32,14 +32,13 @@ def init_scrapers(notifiers):
 
         top_level_notifiers = [notifiers[n] for n in token_config['notifiers']]
         for scraper_type, scraper_conf in token_config['scrapers'].items():
-
             # obtain notifiers for scraper (with eliminating duplicates)
             scraper_notifiers = [notifiers[n] for n in scraper_conf.get('notifiers', [])]
             scraper_notifiers = list(set(scraper_notifiers + top_level_notifiers))
 
             # loading module of scraper
             scraper_module_path = 'news_scraper.scraper.{}'.format(scraper_type)
-            logger.info('Loading scraper {}'.format(scraper_module_path))
+            logger.debug('Loading scraper {}'.format(scraper_module_path))
             scraper_module = importlib.import_module(scraper_module_path)
 
             # instantiate scraper
@@ -75,5 +74,9 @@ def perform_scraping(scraper):
     try:
         logger.info('Start scraping {}...'.format(scraper))
         scraper.scrape()
-    except:
+    except BaseException as e:
         logger.exception('Error while scraping {}'.format(scraper))
+        error_notifier = get_notifier(notifier_id='dev_notifier')
+        if error_notifier:
+            error_notifier.notify(title='Error while scraping {}'.format(scraper),
+                                  message=str(e))

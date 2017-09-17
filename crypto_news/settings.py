@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'multiselectfield',
+    'django_slack',
 ]
 
 MIDDLEWARE = [
@@ -136,67 +137,56 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'WARNING',
             'propagate': False
-
         },
         'news_scraper': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': False
-
         },
         'crypto_news': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': False
-
         },
         'datefinder': {
             'handlers': ['console'],
             'level': 'WARNING',
             'propagate': False
-
         },
         'requests': {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': False
-
         },
         'oauthlib': {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': False
-
         },
         'requests_oauthlib': {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': False
-
         },
         'scrapy': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': False
-
         },
         'tweepy': {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': False
-
         },
         'urllib3': {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': False
-
         },
         'prawcore': {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': False
-
         }
     }
 }
@@ -226,19 +216,23 @@ STATIC_URL = '/static/'
 NOTIFIERS = {
     'iota_slack': {
         'type': 'slack',
-        'url': os.getenv('IOTA_SLACK_WEBHOOK_URL')
+        'channel': '#iota_news'
     },
     'modum_io_slack': {
         'type': 'slack',
-        'url': os.getenv('MODUM_SLACK_WEBHOOK_URL')
+        'channel': '#modum_news'
     },
     'date_found': {
         'type': 'slack',
-        'url': os.getenv('DATE_FOUND_WEBHOOK_URL')
+        'channel': '#random'
     },
     'dev_notifier': {
         'type': 'slack',
-        'url': os.getenv('DEV_WEBHOOK_URL')
+        'channel': '#dev_notifications'
+    },
+    'important_news': {
+        'type': 'slack',
+        'channel': '#important_news'
     }
 }
 
@@ -254,7 +248,7 @@ SCRAPERS = {
             },
             'reddit': {
                 'subreddits': ['Iota'],
-                'notifiers': ['iota_slack']
+                'notifiers': ['important_news']
             }
         },
         'notifiers': ['iota_slack']
@@ -279,6 +273,9 @@ SCRAPERS = {
 
 # update intervals for news scraping
 NEWS_UPDATE_INTERVAL = 60 * 3
+
+# slack
+SLACK_TOKEN = os.getenv('SLACK_TOKEN')
 
 # Twitter authentication
 TWITTER_API_KEY = os.getenv('TWITTER_API_KEY')

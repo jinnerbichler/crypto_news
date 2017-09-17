@@ -28,8 +28,11 @@ class RedditPipeline(object):
                                        submission=submission,
                                        notifiers=spider.notifiers)
 
-        if len(result_text) == 1:  # only submission title
+        if len(result_text) == 1:  # only submission title (no comments yet)
             raise DropItem('Dropping submission: %s' % item)
+
+        logger.info('Updated submission: {} with {} new comments'.format(
+            submission.identifier, len(result_text) - 1))
 
         return {'title': 'Reddit Submission {}'.format(submission.title),
                 'text': '\n'.join(result_text),
@@ -56,7 +59,7 @@ def update_submission(submission_item, notifiers):
                                       num_comments=submission_item.num_comments)
         submission.save()
         logger.debug('Created submission: {}'.format(submission.identifier))
-    except IntegrityError as e:  # already exists -> update item
+    except IntegrityError:  # already exists -> update item
         submission = RedditSubmission.objects.filter(identifier=submission_item.id)
         submission = submission.first()
 
@@ -68,18 +71,15 @@ def update_submission(submission_item, notifiers):
 
             # check if submission became hot  # ToDo: check creation time
             is_hot = is_hot_submission(submission)
-            if is_hot and not submission.is_hot:
+            if is_hot and not submission.is_hot:  # check change
                 notify_all(notifiers=notifiers,
                            title='Hot Reddit Submission detected',
                            message=submission.title,
                            url=submission.url)
-
                 logger.info('Found new hot submission: {}'.format(submission.identifier))
 
             submission.is_hot = is_hot
             submission.save()
-
-            logger.debug('Updated submission: {}'.format(submission.identifier))
         else:
             logger.error('Cannot find submission: {}'.format(submission_item.id))
     return submission
@@ -104,7 +104,6 @@ def update_comments(authors, comments, submission, notifiers):
                                     down_votes=comment_item.downs,
                                     parent_submission=submission)
             comment.save()
-            logger.debug('Created comment: {}'.format(comment.identifier))
 
             # only new comments should be forwarded
             result_text.append(comment.body)
@@ -117,8 +116,6 @@ def update_comments(authors, comments, submission, notifiers):
                 comment.up_votes = comment_item.ups
                 comment.down_votes = comment_item.downs
                 comment.save()
-
-                # logger.debug('Updated comment: {}'.format(comment.identifier))
             else:
                 logger.error('Can not find comment: {}'.format(comment_item.id))
 

@@ -7,7 +7,8 @@ from scrapy import Spider
 # noinspection PyPackageRequirements
 from bs4 import BeautifulSoup
 
-from news_scraper.scraper import ScraperBase
+from news_scraper.notifier import get_notifier
+from news_scraper.scraper import ScraperBase, notify_scrape_error
 
 logger = getLogger(__name__)
 
@@ -64,6 +65,7 @@ class HackedSpider(Spider):
 
         # check if item is valid
         if any(v is None for v in item.values()):
-            return  # ToDo: shoot message
+            notify_scrape_error(url=response.url, item=item)
+            return
 
         yield item
