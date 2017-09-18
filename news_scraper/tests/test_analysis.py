@@ -24,3 +24,7 @@ class AnalysisTest(TestCase):
         for tp in true_positives:
             self.assertFalse(is_false_positive(date_source=tp),
                              msg='"{}" is detected as false positive'.format(tp))
+
+
+            # regexes:
+            # 'to 30 t' --> '[a-z]{2} \d\d [a-z]'
