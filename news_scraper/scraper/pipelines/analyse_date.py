@@ -21,11 +21,12 @@ class AnalysePipeline(object):
         # ToDo: find keywords like 'coming soon' or 'soon'
 
         text = item["text"]
-        for date, source in datefinder.find_dates(text, source=True,
+        for date, source in datefinder.find_dates(text=text,
+                                                  source=True,
                                                   base_date=datetime.now()):  # ToDO: set proper base date
 
             # filter false positives
-            if not is_false_positive(source):
+            if not is_false_positive(source) and date > datetime.now():
 
                 try:
                     event = DetectedEvent(date=make_aware(date, utc),
@@ -62,7 +63,8 @@ def is_false_positive(date_source):
         return True
 
     # filter sources like "16th"
-    if len(tokens) == 1 and any(date_source.endswith(e) for e in ["st", "nd", "rd", "th"]):
+    if len(tokens) == 1 and any(
+            date_source.endswith(e) for e in ["st", "nd", "rd", "th"]):
         return True
 
     # filter tokens like "330, at" or "20, at"
@@ -79,7 +81,8 @@ def is_false_positive(date_source):
         return True
 
     # filter sources like "of 147,233"
-    if len(tokens) == 2 and len(tokens[0]) == 2 and all(s.isdigit() for s in tokens[-1].split(",")):
+    if len(tokens) == 2 and len(tokens[0]) == 2 and all(
+            s.isdigit() for s in tokens[-1].split(",")):
         return True
 
     # filter sources like "may"
@@ -95,11 +98,13 @@ def is_false_positive(date_source):
         return True
 
     # filter tokes like "t 2017" or "t 12"
-    if len(tokens) == 2 and len(tokens[0]) == 1 and tokens[0].isalpha() and tokens[-1].isdigit():
+    if len(tokens) == 2 and len(tokens[0]) == 1 and tokens[0].isalpha() and tokens[
+        -1].isdigit():
         return True
 
     # filter tokes like "7 T"
-    if len(tokens) == 2 and tokens[0].isdigit() and tokens[-1].isalpha() and len(tokens[-1]) == 1:
+    if len(tokens) == 2 and tokens[0].isdigit() and tokens[-1].isalpha() and len(
+            tokens[-1]) == 1:
         return True
 
     for token in tokens:

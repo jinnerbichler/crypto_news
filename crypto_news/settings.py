@@ -136,61 +136,56 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'WARNING',
             'propagate': False
-
         },
         'news_scraper': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': False
-
         },
         'crypto_news': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': False
-
         },
         'datefinder': {
             'handlers': ['console'],
             'level': 'WARNING',
             'propagate': False
-
         },
         'requests': {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': False
-
         },
         'oauthlib': {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': False
-
         },
         'requests_oauthlib': {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': False
-
         },
         'scrapy': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': 'DEBUG',
             'propagate': False
-
         },
         'tweepy': {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': False
-
         },
         'urllib3': {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': False
-
+        },
+        'prawcore': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False
         }
     }
 }
@@ -220,19 +215,27 @@ STATIC_URL = '/static/'
 NOTIFIERS = {
     'iota_slack': {
         'type': 'slack',
-        'url': os.getenv('IOTA_SLACK_WEBHOOK_URL')
+        'channel': '#iota_news'
     },
-    'modum_io_slack': {
+    'misc_news_slack': {
         'type': 'slack',
-        'url': os.getenv('MODUM_SLACK_WEBHOOK_URL')
+        'channel': '#misc_news'
     },
     'date_found': {
         'type': 'slack',
-        'url': os.getenv('DATE_FOUND_WEBHOOK_URL')
+        'channel': '#random'
+    },
+    'neo_slack': {
+        'type': 'slack',
+        'channel': '#neo_news'
     },
     'dev_notifier': {
         'type': 'slack',
-        'url': os.getenv('DEV_WEBHOOK_URL')
+        'channel': '#dev_notifications'
+    },
+    'important_news': {
+        'type': 'slack',
+        'channel': '#important_news'
     }
 }
 
@@ -245,6 +248,11 @@ SCRAPERS = {
                 'hashtags': ['#iotatoken', '#iota'],
                 'exclude_users': ['@coinstats', '@analysisinchain',
                                   '@iota_market', '@dx_alert']
+            },
+            'reddit': {
+                'subreddits': ['Iota'],
+                'notifiers': ['important_news'],
+                'update_interval': 30
             }
         },
         'notifiers': ['iota_slack']
@@ -257,7 +265,21 @@ SCRAPERS = {
                 'exclude_users': []
             }
         },
-        'notifiers': ['modum_io_slack']
+        'notifiers': ['misc_news_slack']
+    },
+    'NEO': {
+        'scrapers': {
+            'twitter': {
+                'users': ['@NEO_Blockchain', '@NEOnewstoday'],
+                'hashtags': [],
+                'exclude_users': []
+            },
+            'reddit': {
+                'subreddits': ['NEO'],
+                'notifiers': ['important_news'],
+            }
+        },
+        'notifiers': ['neo_slack']
     },
     'HACKED': {
         'scrapers': {
@@ -267,13 +289,25 @@ SCRAPERS = {
     }
 }
 
-TWITTER_FOLLOWERS_THRESH = 500
-TWITTER_UPDATE_INTERVAL = 30  # in minutes
+# update intervals for news scraping
+NEWS_UPDATE_INTERVAL = 60 * 3
 
-NEWS_UPDATE_INTERVAL = 60 * 3  # in minutes (twice a day)
+# slack
+SLACK_TOKEN = os.getenv('SLACK_TOKEN')
 
 # Twitter authentication
 TWITTER_API_KEY = os.getenv('TWITTER_API_KEY')
 TWITTER_API_SECRET = os.getenv('TWITTER_API_SECRET')
 TWITTER_ACCESS_TOKEN = os.getenv('TWITTER_ACCESS_TOKEN')
 TWITTER_ACCESS_TOKEN_SECRET = os.getenv('TWITTER_ACCESS_TOKEN_SECRET')
+TWITTER_UPDATE_INTERVAL = 30
+TWITTER_FOLLOWERS_THRESH = 500
+
+# Reddit
+REDDIT_CLIENT_ID = os.getenv('REDDIT_CLIENT_ID')
+REDDIT_CLIENT_SECRET = os.getenv('REDDIT_CLIENT_SECRET')
+REDDIT_USERNAME = os.getenv('REDDIT_USERNAME')
+REDDIT_PASSWORD = os.getenv('REDDIT_PASSWORD')
+REDDIT_UPDATE_INTERVAL = 15
+REDDIT_SUBMISSION_LIMIT = 20
+REDDIT_HOT_THRESHHOLD = 25

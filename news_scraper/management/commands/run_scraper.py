@@ -30,20 +30,23 @@ def init_scrapers(notifiers):
     scrapers = []
     for identifier, token_config in settings.SCRAPERS.items():
 
-        scraper_notifiers = [notifiers[n] for n in token_config['notifiers']]
-        for scraper_type, scraper_config in token_config['scrapers'].items():
-            if scraper_type != 'notifier':
-                # loading module of scraper
-                scraper_module_path = 'news_scraper.scraper.{}'.format(scraper_type)
-                logger.info('Loading scraper {}'.format(scraper_module_path))
-                scraper_module = importlib.import_module(scraper_module_path)
+        top_level_notifiers = [notifiers[n] for n in token_config['notifiers']]
+        for scraper_type, scraper_conf in token_config['scrapers'].items():
+            # obtain notifiers for scraper (with eliminating duplicates)
+            scraper_notifiers = [notifiers[n] for n in scraper_conf.get('notifiers', [])]
+            scraper_notifiers = list(set(scraper_notifiers + top_level_notifiers))
 
-                # instantiate scraper
-                scraper = scraper_module.Scraper(identifier=identifier,
-                                                 config=scraper_config,
-                                                 notifiers=scraper_notifiers)
+            # loading module of scraper
+            scraper_module_path = 'news_scraper.scraper.{}'.format(scraper_type)
+            logger.debug('Loading scraper {}'.format(scraper_module_path))
+            scraper_module = importlib.import_module(scraper_module_path)
 
-                scrapers.append(scraper)
+            # instantiate scraper
+            scraper = scraper_module.Scraper(identifier=identifier,
+                                             config=scraper_conf,
+                                             notifiers=scraper_notifiers)
+
+            scrapers.append(scraper)
 
     return scrapers
 
@@ -69,7 +72,11 @@ def schedule_scraping(scraper):
 # noinspection PyBroadException
 def perform_scraping(scraper):
     try:
-        logger.info('Start scraping {}...'.format(scraper))
+        logger.info('Start scraper {}...'.format(scraper))
         scraper.scrape()
-    except:
+    except BaseException as e:
         logger.exception('Error while scraping {}'.format(scraper))
+        error_notifier = get_notifier(notifier_id='dev_notifier')
+        if error_notifier:
+            error_notifier.notify(title='Error while scraping {}'.format(scraper),
+                                  message=str(e))
