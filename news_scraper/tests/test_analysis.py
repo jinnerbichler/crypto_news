@@ -13,7 +13,7 @@ class AnalysisTest(TestCase):
                            '16th', 'of 90', 'by mar', '2017', '500, 4', '', 'may', '1,337',
                            '4,327', 'on to mon', 'of 155 sat', 'at 1,337', 'of 155', '12,33',
                            '276 on Sunday', 'may on', '08t2', '2t', '33d', '7 T', 't 2017',
-                           't 12']  # '32 at', 't of 2015', '26 of t']
+                           't 12']  # '32 at', 't of 2015', '26 of t', '5000 to', 't 20 t', '10-15', 't-30', '32 at t']
         for fp in false_positives:
             self.assertTrue(is_false_positive(date_source=fp),
                             msg='"{}" is not detected as false positive'.format(fp))
