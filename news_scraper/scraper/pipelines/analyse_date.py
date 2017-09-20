@@ -16,7 +16,7 @@ class AnalysePipeline(object):
 
     # noinspection PyUnusedLocal,PyMethodMayBeStatic
     def process_item(self, item, spider):
-        notifier = get_notifier(notifier_id="date_found")
+        notifier = get_notifier(notifier_id="event_found")
 
         # ToDo: find keywords like 'coming soon' or 'soon'
 
