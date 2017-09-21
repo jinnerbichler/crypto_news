@@ -248,11 +248,12 @@ SCRAPERS = {
                 'hashtags': ['#iotatoken', '#iota'],
                 'exclude_users': ['@coinstats', '@analysisinchain',
                                   '@iota_market', '@dx_alert']
+                'hotness_notifiers': ['important_news'],
             },
             'reddit': {
                 'subreddits': ['Iota'],
+                'update_interval': 30,
                 'hotness_notifiers': ['important_news'],
-                'update_interval': 30
             }
         },
         'notifiers': ['iota_slack']
@@ -262,7 +263,8 @@ SCRAPERS = {
             'twitter': {
                 'users': ['@modum_io'],
                 'hashtags': ['#modum'],
-                'exclude_users': []
+                'exclude_users': [],
+                'hotness_notifiers': ['important_news'],
             }
         },
         'notifiers': ['misc_news_slack']
@@ -272,7 +274,8 @@ SCRAPERS = {
             'twitter': {
                 'users': ['@NEO_Blockchain', '@NEOnewstoday'],
                 'hashtags': [],
-                'exclude_users': []
+                'exclude_users': [],
+                'hotness_notifiers': ['important_news'],
             },
             'reddit': {
                 'subreddits': ['NEO'],
