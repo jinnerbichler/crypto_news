@@ -54,86 +54,35 @@ class AnalysePipeline(object):
 
 
 def is_false_positive(date_source):
-    if date_source is None or len(date_source) == 0:
+
+    if not date_source:
         return True
 
-    tokens = date_source.split()
-
-    # filter years (e.g. 2017)
-    if date_source.isdigit():
-        return True
-
-    # filter sources like "may", or "mar
+    # filter sources like "may", or "mar", but not "month"
+    if "month" in date_source:
+        return False
     if any(s in date_source for s in ['may', 'mar', 'mon']):
         return True
 
-    # filter sources like "16th"
-    if len(tokens) == 1 and re.match(r'\d{2}(st|nd|rd|th)', date_source):
-        return True
-
-    # filter inapropptiate years
+    # filter inappropriate years
     for number in re.compile(r'\d{4,}').findall(date_source):
         if int(number) > datetime.now().year + 10:
             return True
 
-    # filter inapropptiate months or days
+    # filter inappropriate months or days (e.g. number higher than 60)
     for number in re.compile(r'\d{2,3}').findall(date_source):
-        if int(number) > 32:
+        if int(number) > 60:
             return True
 
-    # filter tokens like "330, at" or "20, at"
-    if tokens[0].endswith(',') and not tokens[-1].isdigit():
-        return True
-
-    # # filter sources like "at 2305" or "at 2305"
-    # if len(tokens) == 2 and len(tokens[0]) == 2 and tokens[-1].isdigit():
-    #     return True
-    #
-    # # filter sources like "by mar" or "to mar"
-    # if len(tokens) == 2 and len(tokens[0]) == 2 and not tokens[0].isdigit() \
-    #         and all(not c.isdigit() and c.islower() for c in tokens[-1]):
-    #     return True
-    #
-    # # filter sources like "of 147,233"
-    # if len(tokens) == 2 and len(tokens[0]) == 2 and all(
-    #         s.isdigit() for s in tokens[-1].split(",")):
-    #     return True
-    #
-    # # filter sources like "may"
-    # if "may" in date_source:
-    #     return True
-    #
-    # # filter tokes like "on to mon" or "of 155 sat"
-    # if len(tokens[-1]) == 3 and all(not c.isdigit() and c.islower() for c in tokens[-1]):
-    #     return True
-    #
-    # # filter sources like "500, 4"
-    # if len(tokens[-1]) == 1 and tokens[-1].isdigit():
-    #     return True
-    #
-    # # filter tokes like "t 2017" or "t 12"
-    # if len(tokens) == 2 and len(tokens[0]) == 1 and tokens[0].isalpha() and tokens[
-    #     -1].isdigit():
-    #     return True
-    #
-    # # filter tokes like "7 T"
-    # if len(tokens) == 2 and tokens[0].isdigit() and tokens[-1].isalpha() and len(
-    #         tokens[-1]) == 1:
-    #     return True
-    #
-    # for token in tokens:
-    #     # filter sources like "f" or "4,327"
-    #     if ',' in token and any(st.isdigit() for st in token.split(",")):
-    #         return True
-    #
-    #     # filter three digit letters
-    #     if len(token) == 3 and token.isdigit():
-    #         return True
-    #
-    #     # filter tokens like "08t2", "2t" or "33d"
-    #     num_digits = len([c for c in token if c.isdigit()])
-    #     num_letters = len([c for c in token if c.isalpha()])
-    #     if num_letters == 1 and num_digits > 0:
-    #         return True
+    invalid_regexes = [
+        r'^\d*(, at| at| T| of [a-z])',  # "330, at" or "7 T"
+        r'(at |of |t |of -|by )\d*$',  # "at 2305" or "at 2305"
+        r'^\d*(,|[a-z]|-|^[a-z]-)\d*$',  # "147,233" or "82t2"
+        r'^(t )\d*( t)$',  # "t 20 t"
+        r'^\d{2}(st|nd|rd|th)$'  # "16th"
+    ]
+    for regex in invalid_regexes:
+        if re.search(regex, date_source):
+            return True
 
     return False
