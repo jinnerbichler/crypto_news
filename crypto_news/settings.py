@@ -221,9 +221,9 @@ NOTIFIERS = {
         'type': 'slack',
         'channel': '#misc_news'
     },
-    'date_found': {
+    'event_found': {
         'type': 'slack',
-        'channel': '#random'
+        'channel': '#event_extraction'
     },
     'neo_slack': {
         'type': 'slack',
