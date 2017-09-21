@@ -248,11 +248,12 @@ SCRAPERS = {
                 'hashtags': ['#iotatoken', '#iota'],
                 'exclude_users': ['@coinstats', '@analysisinchain',
                                   '@iota_market', '@dx_alert']
+                'hotness_notifiers': ['important_news'],
             },
             'reddit': {
                 'subreddits': ['Iota'],
-                'notifiers': ['important_news'],
-                'update_interval': 30
+                'update_interval': 30,
+                'hotness_notifiers': ['important_news'],
             }
         },
         'notifiers': ['iota_slack']
@@ -262,7 +263,8 @@ SCRAPERS = {
             'twitter': {
                 'users': ['@modum_io'],
                 'hashtags': ['#modum'],
-                'exclude_users': []
+                'exclude_users': [],
+                'hotness_notifiers': ['important_news'],
             }
         },
         'notifiers': ['misc_news_slack']
@@ -272,11 +274,13 @@ SCRAPERS = {
             'twitter': {
                 'users': ['@NEO_Blockchain', '@NEOnewstoday'],
                 'hashtags': [],
-                'exclude_users': []
+                'exclude_users': [],
+                'hotness_notifiers': ['important_news'],
             },
             'reddit': {
                 'subreddits': ['NEO'],
-                'notifiers': ['important_news'],
+                'ignored_regexes': [r'^(Daily discussion)'],
+                'hotness_notifiers': ['important_news'],
             }
         },
         'notifiers': ['neo_slack']
@@ -302,6 +306,8 @@ TWITTER_ACCESS_TOKEN = os.getenv('TWITTER_ACCESS_TOKEN')
 TWITTER_ACCESS_TOKEN_SECRET = os.getenv('TWITTER_ACCESS_TOKEN_SECRET')
 TWITTER_UPDATE_INTERVAL = 30
 TWITTER_FOLLOWERS_THRESH = 500
+TWITTER_HOTNESS_LIKES_THRESH = 30
+TWITTER_HOTNESS_RETWEET_THRESH = 30
 
 # Reddit
 REDDIT_CLIENT_ID = os.getenv('REDDIT_CLIENT_ID')

@@ -7,7 +7,7 @@ from django.conf import settings
 from praw import Reddit
 from scrapy import Request
 from scrapy.http import Response
-
+from news_scraper.notifier import get_notifier
 from news_scraper.scraper import ScraperBase
 
 logger = getLogger(__name__)
@@ -49,7 +49,9 @@ class RedditSpider(scrapy.Spider):
 
         self.linked_coin = linked_coin
         self.notifiers = notifiers
+        self.hotness_notifiers = [get_notifier(n_id) for n_id in config.get('hotness_notifiers', [])]
         self.subreddits = config['subreddits']
+        self.ignored_regexes = config.get('ignored_regexes', [])
 
     def start_requests(self):
         return [SubredditRequest(subreddit=sr) for sr in self.subreddits]
