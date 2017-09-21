@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 
+import re
 from django.conf import settings
 from django.db import IntegrityError
 from django.utils.timezone import make_aware, utc
@@ -19,9 +20,7 @@ class RedditPipeline(object):
     def process_item(self, item, spider):
         # update or create submission
         submission_item = item['submission'].submission
-        submission, is_new = update_submission(submission_item=submission_item,
-                                               notifiers=spider.notifiers,
-                                               linked_coin=spider.linked_coin)
+        submission, is_new = update_submission(submission_item=submission_item, spider=spider)
 
         # create or update comments
         new_comments = update_comments(authors=item['authors'],
@@ -30,7 +29,7 @@ class RedditPipeline(object):
                                        notifiers=spider.notifiers)
 
         # create resulting text
-        result_text = [submission.title] if is_new else []
+        result_text = [submission.title, submission.self_text] if is_new else []
         result_text += [c.body for c in new_comments]
 
         # check if new entries
@@ -51,7 +50,7 @@ class RedditPipeline(object):
                 'linked_coin': spider.linked_coin}
 
 
-def update_submission(submission_item, notifiers, linked_coin):
+def update_submission(submission_item, spider):
     is_new = False
     try:
         created_at = datetime.utcfromtimestamp(submission_item.created_utc)
@@ -71,8 +70,7 @@ def update_submission(submission_item, notifiers, linked_coin):
         logger.debug('Created submission: {}'.format(submission.identifier))
 
     except IntegrityError:  # already exists -> update item
-        submission = RedditSubmission.objects.filter(identifier=submission_item.id)
-        submission = submission.first()
+        submission = RedditSubmission.objects.filter(identifier=submission_item.id).first()
 
         # update fields
         if submission:
@@ -84,10 +82,10 @@ def update_submission(submission_item, notifiers, linked_coin):
             logger.error('Cannot find submission: {}'.format(submission_item.id))
 
     # check if submission became hot  # ToDo: check creation time
-    is_hot = is_hot_submission(submission)
+    is_hot = is_hot_submission(submission, ignored_regexes=spider.ignored_regexes)
     if is_hot and not submission.is_hot:  # check change
-        notify_all(notifiers=notifiers,
-                   title='Hot Reddit Submission detected for {}'.format(linked_coin),
+        notify_all(notifiers=spider.hotness_notifiers,
+                   title='Hot Reddit Submission detected for {}'.format(spider.linked_coin),
                    message=submission.title,
                    url=submission.url)
         logger.info('Found new hot submission: {}'.format(submission.identifier))
@@ -104,8 +102,6 @@ def update_comments(authors, comments, submission, notifiers):
     new_comments = []
     for comment_item in comments:
         try:
-
-            # ToDo: filter iotabot comments
 
             created_at = datetime.utcfromtimestamp(comment_item.created_utc)
             author = authors[comment_item.id]
@@ -136,5 +132,11 @@ def update_comments(authors, comments, submission, notifiers):
     return new_comments
 
 
-def is_hot_submission(submission):
+def is_hot_submission(submission, ignored_regexes):
+    if is_title_ignored(title=submission.title, ignored_regexes=ignored_regexes):
+        return False
     return submission.num_comments > settings.REDDIT_HOT_THRESHHOLD
+
+
+def is_title_ignored(title, ignored_regexes):
+    return any(re.search(r, title) for r in ignored_regexes)

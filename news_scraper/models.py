@@ -24,6 +24,7 @@ class Tweet(models.Model):
     identifier = models.TextField(unique=True)
     linked_token = models.CharField(max_length=10)
     text = models.TextField(default='')
+    is_hot = models.BooleanField(default=False)
 
     # noinspection PyRedundantParentheses
     class Meta:

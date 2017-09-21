@@ -6,7 +6,7 @@ import scrapy
 import tweepy
 from django.conf import settings
 from scrapy.http import Request, Response
-
+from news_scraper.notifier import get_notifier
 from news_scraper.scraper import ScraperBase
 
 logger = getLogger(__name__)
@@ -52,7 +52,8 @@ class TwitterSpider(scrapy.Spider):
         self.notifiers = notifiers
         self.users = config['users']
         self.hashtags = config['hashtags']
-        self.excluded_authors = config['exclude_users']
+        self.excluded_authors = config.get('exclude_users', [])
+        self.hotness_notifiers = [get_notifier(n_id) for n_id in config.get('hotness_notifiers', [])]
         self.count = 50
 
     def start_requests(self):

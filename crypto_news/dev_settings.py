@@ -5,10 +5,12 @@ DEBUG = True
 SCRAPERS = {
     'IOTA': {
         'scrapers': {
-            'reddit': {
-                'subreddits': ['Iota'],
-                'notifiers': ['important_news'],
-                'update_interval': 30
+            'twitter': {
+                'users': ['@iotatoken', '@tangleblog', '@DomSchiener ', '@DavidSonstebo'],
+                'hashtags': ['#iotatoken', '#iota'],
+                'exclude_users': ['@coinstats', '@analysisinchain',
+                                  '@iota_market', '@dx_alert'],
+                'hotness_notifiers': ['important_news'],
             }
         },
         'notifiers': []
