@@ -19,4 +19,10 @@ elif [ "$1" == "stop-local" ]; then
     eval $(docker-machine env -u)
     docker-compose stop
 
+elif [ "$1" == "deploy-prod" ]; then
+
+    eval $(docker-machine env crypto-news)
+    docker-compose up -d --build
+    docker-compose logs -f
+
 fi
