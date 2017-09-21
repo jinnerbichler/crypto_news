@@ -22,7 +22,8 @@ class TwitterPipeline(object):
 
         # filter tweet
         is_retweet = tweet_item.retweeted or ('RT @' in tweet_item.text)
-        contains_chinese = re.search(u'[\u4e00-\u9fff]', tweet_item.text)  # ToDo: translate
+        contains_chinese = re.search(u'[\u4e00-\u9fff]',
+                                     tweet_item.text)  # ToDo: translate
         screen_name = tweet_item.author.screen_name
         is_author_excluded = '@{}'.format(screen_name).lower() in spider.excluded_authors
         followers_count = tweet_item.author.followers_count
@@ -44,7 +45,8 @@ class TwitterPipeline(object):
 
                 # trigger notifications
                 notify_all(notifiers=spider.hotness_notifiers,
-                           title='New Tweet from {}'.format(tweet_item.author.screen_name),
+                           title='New Tweet from {}'.format(
+                               tweet_item.author.screen_name),
                            message=tweet_item.text,
                            url=construct_twitter_link(tweet_item))
 
@@ -65,18 +67,25 @@ class TwitterPipeline(object):
                     is_hot = is_tweet_hot(tweet_item)
                     if not tweet.is_hot and is_hot:
                         # shoot notifications
+                        message = 'FAV: {}, RETW: {}\n{}'.format(
+                            tweet_item.favorite_count,
+                            tweet_item.retweet_count,
+                            tweet.text)
+                        title = 'Hot Tweet detected for {}'.format(spider.linked_coin)
                         notify_all(notifiers=spider.hotness_notifiers,
-                                   title='Hot Tweet detected for {}'.format(spider.linked_coin),
-                                   message=tweet.text,
+                                   title=title,
+                                   message=message,
                                    url=construct_twitter_link(tweet_item))
-                        logger.info('Found new hot tweet ({}) from {}'.format(tweet.identifier,
-                                                                              tweet.creator))
+                        logger.info(
+                            'Found new hot tweet ({}) from {}'.format(tweet.identifier,
+                                                                      tweet.creator))
 
                         # update stored tweet
                         tweet.is_hot = is_hot
                         tweet.save()
                 except Tweet.DoesNotExist as e:
-                    logger.error('Cannot find Tweet {} in database!'.format(tweet_item.id))
+                    logger.error(
+                        'Cannot find Tweet {} in database!'.format(tweet_item.id))
 
         raise DropItem("Dropping tweet: %s" % item)
 

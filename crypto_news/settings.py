@@ -247,7 +247,7 @@ SCRAPERS = {
                 'users': ['@iotatoken', '@tangleblog', '@DomSchiener ', '@DavidSonstebo'],
                 'hashtags': ['#iotatoken', '#iota'],
                 'exclude_users': ['@coinstats', '@analysisinchain',
-                                  '@iota_market', '@dx_alert']
+                                  '@iota_market', '@dx_alert'],
                 'hotness_notifiers': ['important_news'],
             },
             'reddit': {
@@ -306,8 +306,8 @@ TWITTER_ACCESS_TOKEN = os.getenv('TWITTER_ACCESS_TOKEN')
 TWITTER_ACCESS_TOKEN_SECRET = os.getenv('TWITTER_ACCESS_TOKEN_SECRET')
 TWITTER_UPDATE_INTERVAL = 30
 TWITTER_FOLLOWERS_THRESH = 500
-TWITTER_HOTNESS_LIKES_THRESH = 30
-TWITTER_HOTNESS_RETWEET_THRESH = 30
+TWITTER_HOTNESS_LIKES_THRESH = 90
+TWITTER_HOTNESS_RETWEET_THRESH = 50
 
 # Reddit
 REDDIT_CLIENT_ID = os.getenv('REDDIT_CLIENT_ID')
