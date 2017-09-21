@@ -24,6 +24,6 @@ elif [ "$1" == "deploy-prod" ]; then
     source ./private.sh
     eval $(docker-machine env crypto-news)
     docker-compose up -d --build
-    docker-compose logs -f
+    docker-compose logs -f scraper
 
 fi
